@@ -8,9 +8,13 @@ Status: `Planned` → `In progress` → `Done` (→ `Deprecated`).
 | F-02 | Dynamic runner registration from env | runner | `runner/entrypoint.sh` | Done | De-registers via `trap EXIT`; needs a still-valid token |
 | F-03 | Linear webhook listener (FastAPI) | agent-engine | `agent-engine/main.py` | In progress | Endpoint exists; `Linear-Signature` verification |
 | F-04 | Ticket filter: high priority + "In Progress" | agent-engine | `agent-engine/main.py` | Planned | |
-| F-05 | Clone repo → LangGraph agent loop → commit & push | agent-engine | `agent-engine/agent/` | Planned | |
-| F-06 | k8s Secrets for GitHub token, Anthropic key, Linear secrets | k3s | `k3s/secrets.example.yaml` | Done | Real file `factory.secret.yaml` is git-ignored |
+| F-05 | Pull repo, read Linear ticket, run dev-agent roles (`.agents/roles/`), commit & push | agent-engine | `agent-engine/` | Blocked | Needs a decision on how much autonomy the agent gets — see agent-engine component page |
+| F-06 | k8s Secrets created interactively | k3s | `scripts/create-secrets.sh` | Done | Runner + SSH secrets; agent keys pending |
 | F-07 | Deployments `ai-agent-engine` and `github-runner` (`imagePullPolicy: Never`) | k3s | `k3s/cluster-manifests.yaml` | Done | |
-| F-08 | CI workflow on self-hosted runner (build, test) | CI | `.github/workflows/` | Planned | Cross-build for `linux/arm/v7` |
-| F-09 | Deploy to Raspberry Pi 2 over SSH | CI | `.github/workflows/` | Planned | 1 GB RAM: no k3s on the Pi |
+| F-08 | CI workflow on self-hosted runner (vet, test, build) | CI | `pipelines/pricetracker/ci-deploy.yml` | Done | Must be copied into pricetracker |
+| F-09 | Deploy to teruel over SSH via `deploy-armv6.sh` | CI | `pipelines/pricetracker/ci-deploy.yml` | Done | |
+| F-11 | Server install (Docker, k3s, storage) | ops | `scripts/install-barcelona.sh` | Done | |
+| F-12 | Pi setup (deploy user, restricted sudo) | ops | `scripts/setup-teruel.sh` | Done | |
+| F-13 | Persistent host storage | k3s | `/srv/factory` hostPath | Done (runner) | ADR-0007 |
+| F-14 | Runner self-registration via PAT | runner | `runner/entrypoint.sh` | Done | ADR-0008 |
 | F-10 | Small, atomic commits with Conventional Commit messages | agent-engine | `agent-engine/agent/` | Planned | See ADR-0003 |
