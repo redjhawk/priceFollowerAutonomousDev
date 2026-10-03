@@ -1,11 +1,11 @@
-# Secrets live in factory.secret.yaml (see secrets.example.yaml) and are never committed.
+# Secrets are created by scripts/create-secrets.sh and are never committed.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ai-agent-engine
   namespace: default
 spec:
-  replicas: 1
+  replicas: 0  # disabled until the agent engine is implemented (docs/components/agent-engine.md)
   selector:
     matchLabels:
       app: ai-agent-engine
@@ -51,6 +51,8 @@ metadata:
   namespace: default
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: github-runner
@@ -59,15 +61,56 @@ spec:
       labels:
         app: github-runner
     spec:
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        fsGroup: 1000  # lets the runner user read the mounted SSH Secret
       containers:
       - name: runner
         image: local-gh-runner:latest
         imagePullPolicy: Never
         env:
         - name: REPO_URL
-          value: "https://github.com/YOUR_USERNAME/YOUR_REPOSITORY"
-        - name: RUNNER_TOKEN
+          value: "https://github.com/redjhawk/pricetracker"
+        - name: RUNNER_NAME
+          value: "barcelona"
+        - name: RUNNER_LABELS
+          value: "barcelona"
+        - name: GITHUB_PAT
           valueFrom:
             secretKeyRef:
               name: factory-secrets
-              key: runner-token
+              key: runner-pat
+        volumeMounts:
+        - name: work
+          mountPath: /home/runner/_work
+        - name: cache
+          mountPath: /home/runner/.cache
+        - name: gopath
+          mountPath: /home/runner/go
+        - name: npm
+          mountPath: /home/runner/.npm
+        - name: ssh
+          mountPath: /etc/factory-ssh
+          readOnly: true
+      # Persistent state lives on barcelona under /srv/factory (see scripts/install-barcelona.sh)
+      volumes:
+      - name: work
+        hostPath:
+          path: /srv/factory/runner/work
+          type: Directory
+      - name: cache
+        hostPath:
+          path: /srv/factory/runner/cache
+          type: Directory
+      - name: gopath
+        hostPath:
+          path: /srv/factory/runner/go
+          type: Directory
+      - name: npm
+        hostPath:
+          path: /srv/factory/runner/npm
+          type: Directory
+      - name: ssh
+        secret:
+          secretName: factory-ssh
+          defaultMode: 0440

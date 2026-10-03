@@ -1,15 +1,15 @@
 # Component: k3s
 
-- **Status:** Done (manifests)
+- **Status:** Runner done; agent engine pending
 - **Source:** `k3s/`
 
 ## Files
 | File | Description |
 |------|-------------|
-| `cluster-manifests.yaml` | Deployments `ai-agent-engine` (port 8000) and `github-runner`, both `imagePullPolicy: Never`, env from `factory-secrets` |
-| `secrets.example.yaml` | Template for the `factory-secrets` Secret; real copy `factory.secret.yaml` is git-ignored |
+| `cluster-manifests.yaml` | Deployment `ai-agent-engine` (skeleton) and `github-runner` (Recreate strategy, fsGroup 1000, hostPath volumes, SSH Secret), both `imagePullPolicy: Never` |
+
+Secrets are created by `scripts/create-secrets.sh`, never stored in git.
 
 ## Known limitations / TODO
-- No Service/Ingress for the agent yet: Linear cannot reach it (needs Service + tunnel).
-- No resource requests/limits, no liveness probe on `/health`.
-- `REPO_URL` is a placeholder in the manifest.
+- No Service/tunnel for the agent webhook yet.
+- No resource requests/limits, no liveness probes.
