@@ -3,31 +3,39 @@ FROM debian:bookworm-slim
 # Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Build and deploy toolchain for pricetracker: git, ssh, rsync, Node 22, Go
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \
     git \
+    gnupg \
     jq \
+    openssh-client \
+    rsync \
     sudo \
     build-essential \
-    libssl-dev \
-    libffi-dev \
-    python3 \
-    python3-pip \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a non-root runner user
-RUN useradd -m runner && usermod -aG sudo runner
+ARG GO_VERSION=1.25.0
+RUN curl -fsSL https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz | tar -C /usr/local -xz
+ENV PATH=/usr/local/go/bin:$PATH
+
+# Create a non-root runner user (sudo is needed by installdependencies.sh only)
+RUN useradd -m -u 1000 runner && usermod -aG sudo runner
 RUN echo "runner ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 USER runner
 WORKDIR /home/runner
 
-# Download and extract GitHub Actions Runner (x64: runs on the build server, not the Pi)
-ARG RUNNER_VERSION=2.311.0
-RUN curl -O -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz \
-    && tar xzf ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz \
-    && rm actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz \
+# Download GitHub Actions Runner (x64: runs on barcelona, not on the Pi); "latest" by default
+ARG RUNNER_VERSION=latest
+RUN version="$RUNNER_VERSION" \
+    && if [ "$version" = latest ]; then \
+         version=$(curl -fsSL https://api.github.com/repos/actions/runner/releases/latest | jq -r .tag_name | sed 's/^v//'); \
+       fi \
+    && curl -fsSL https://github.com/actions/runner/releases/download/v${version}/actions-runner-linux-x64-${version}.tar.gz | tar xz \
     && sudo ./bin/installdependencies.sh
 
 COPY --chown=runner:runner entrypoint.sh /home/runner/entrypoint.sh
