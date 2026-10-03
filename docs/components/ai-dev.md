@@ -19,7 +19,8 @@ write access. The job runs on the self-hosted runner `barcelona`.
 
 ## What Claude may do
 `--allowedTools`: read/edit/write files, search, Task subagents (one per role), `go build|test|vet`,
-`gofmt`, `npm ci`, `npm run build`, `npx tsc`, read-only git. Commits and the branch push are done by
+`gofmt`, `go run`, `npm ci`, `npm run build|dev|test:*`, `npx tsc`, `npx playwright test`,
+`curl` to localhost, read-only git. Commits and the branch push are done by
 the action itself on a branch `ai-dev/...`; it never pushes to `main`.
 
 ## Flow
@@ -30,11 +31,10 @@ the action itself on a branch `ai-dev/...`; it never pushes to `main`.
 4. You review and merge → `ci-deploy` deploys to teruel.
 
 ## Configuration
-- GitHub secret `CLAUDE_CODE_OAUTH_TOKEN` in pricetracker (from `claude setup-token`; uses the
-  Claude subscription, no API billing).
+- `CLAUDE_CODE_OAUTH_TOKEN` in the runner pod, from k8s Secret `factory-secrets` on barcelona
+  (`claude setup-token`; Claude subscription, no API billing; never stored in GitHub, ADR-0010).
 - Claude GitHub App installed on pricetracker (provides the GitHub token for comments and pushes).
 - Model `claude-sonnet-5-5`, max 200 turns, 120 min timeout (in the workflow file).
 
 ## Known limitations
-- Browser QA (Playwright) is not available on the runner; the QA role records it as blocked.
 - One runner: while Claude works, `ci-deploy` runs wait in the queue.

@@ -12,6 +12,7 @@
 | Workflow queued forever | Runner offline or label mismatch | `runs-on: [self-hosted, barcelona]`; check runner pod logs |
 | ai-dev does not start after labelling | Label added by another account, label name differs, or workflow not on `main` | Only `redjhawk` triggers it; label must be exactly `ai-dev` |
 | ai-dev fails at "Install Bun" | Old runner image without `unzip` | `scripts/build-and-import.sh runner && scripts/deploy.sh github-runner` |
-| ai-dev fails with an authentication error | Claude GitHub App not installed or `CLAUDE_CODE_OAUTH_TOKEN` missing/revoked | SETUP.md step 10 (new token: `claude setup-token`) |
+| ai-dev fails with an authentication error | Claude GitHub App not installed or Claude token revoked | SETUP.md step 10 |
+| ai-dev fails at "Load Claude token from barcelona" | Token not in `factory-secrets` | `claude setup-token` → `scripts/create-secrets.sh` → `scripts/deploy.sh github-runner` |
 | ai-dev stops with a usage-limit message | Claude subscription limit reached | Wait for the limit to reset, then comment `@claude continue` |
 | Claude says a command is not allowed | Not in `--allowedTools` of `ai-dev.yml` | Add it to the allow-list in this repo, copy the workflow to pricetracker again |

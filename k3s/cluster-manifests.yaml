@@ -35,6 +35,13 @@ spec:
             secretKeyRef:
               name: factory-secrets
               key: runner-pat
+        # Claude subscription token for the ai-dev workflow; it stays on barcelona
+        - name: CLAUDE_CODE_OAUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: factory-secrets
+              key: claude-oauth-token
+              optional: true
         volumeMounts:
         - name: work
           mountPath: /home/runner/_work

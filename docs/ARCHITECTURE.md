@@ -37,7 +37,7 @@
 
 - pricetracker is public: both workflows refuse fork code; `ai-dev` runs only for `redjhawk`.
 - Claude's tools are an allow-list (no arbitrary shell, no push); the action pushes the branch.
-- Runner PAT and deploy key live in k8s Secrets; `CLAUDE_CODE_OAUTH_TOKEN` is a GitHub secret. None in git.
+- Runner PAT and deploy key live in k8s Secrets; so does the Claude token (ADR-0010). None in git or GitHub secrets.
 - The `deploy` user on teruel can only run the installer as root.
 
 ## Decisions in effect
@@ -49,6 +49,7 @@
 | Deploy target | Raspberry Pi 2 (ARMv7, 1 GB RAM) | [0005](decisions/0005-raspberry-pi-2-target.md) |
 | Base images | Debian (`bookworm-slim`) | [0006](decisions/0006-debian-base-images.md) |
 | Storage | `hostPath` under `/srv/factory` on barcelona | [0007](decisions/0007-host-storage.md) |
+| Claude token | k8s Secret on barcelona, not a GitHub secret | [0010](decisions/0010-claude-token-on-barcelona.md) |
 | Runner auth & triggers | PAT-based self-registration; push-only pipeline | [0008](decisions/0008-runner-registration.md) |
 
 ## Hosts

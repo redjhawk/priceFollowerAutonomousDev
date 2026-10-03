@@ -107,9 +107,12 @@ It asks for:
 - **teruel's IP address.** Pods cannot resolve LAN host names, so the runner's SSH config
   maps the name `teruel` to this IP.
 - **The GitHub token** from step 5 (input is hidden).
+- **Your Claude token** for the AI developer: on a machine where `claude` is logged in, run
+  `claude setup-token`, log in in the browser and paste the printed token (input is hidden). Leave it
+  empty to set up only deployments for now; re-run the script later to add it.
 
-It creates two Secrets; nothing is written to the repository:
-- `factory-secrets` holds the token;
+It creates two Secrets; nothing is written to the repository or to GitHub:
+- `factory-secrets` holds the GitHub token and the Claude token;
 - `factory-ssh` holds the deploy key, `known_hosts` and the SSH config.
 
 Check it: `kubectl get secrets` lists `factory-secrets` and `factory-ssh`.
@@ -169,10 +172,10 @@ data (`/var/lib/pricefollower/pricefollower.sqlite` on teruel) is kept across de
 1. **Install the Claude GitHub App** on pricetracker: open https://github.com/apps/claude →
    *Install* → *Only select repositories* → `pricetracker`. It gives the workflow the GitHub token it
    uses to comment and push branches.
-2. **Add your Claude token:** on a machine where `claude` is logged in, run `claude setup-token`,
-   log in in the browser and copy the printed token. Then pricetracker → **Settings › Secrets and
-   variables › Actions › New repository secret** → name `CLAUDE_CODE_OAUTH_TOKEN`, value: the token.
-   Treat it like a password.
+2. **Check your Claude token is on barcelona:** it was entered in step 6 and never goes to GitHub.
+   If you skipped it, run `scripts/create-secrets.sh` again, then `scripts/deploy.sh github-runner`.
+   Check: `kubectl exec deploy/github-runner -- printenv CLAUDE_CODE_OAUTH_TOKEN | wc -c` prints
+   more than 1.
 3. **Create the label:** pricetracker → **Issues › Labels › New label** → name `ai-dev`.
 
 ## 11. Use it: from issue to deployment
@@ -192,7 +195,7 @@ data (`/var/lib/pricefollower/pricefollower.sqlite` on teruel) is kept across de
 
 Notes:
 - One runner does everything: while Claude works, deployments wait in the queue.
-- Browser tests (Playwright) are not available yet; Claude marks interface QA as blocked.
+- Claude runs the QA role's Playwright tests on barcelona against `npm run dev`.
 - Runs count against your Claude subscription limits, shared with your own Claude use; the model
   and turn limit are set in `ai-dev.yml`.
 - Planning in Linear is on the [roadmap](ROADMAP.md).
@@ -205,6 +208,7 @@ Notes:
 | See what Claude did | pricetracker → **Actions › ai-dev** → the run's log, or the issue comments |
 | Restart the runner | `scripts/deploy.sh github-runner` |
 | Rebuild the runner image (e.g. new Go version) | `scripts/build-and-import.sh runner && scripts/deploy.sh github-runner` |
+| Renew the Claude token | `claude setup-token` → `scripts/create-secrets.sh` → `scripts/deploy.sh github-runner` |
 | Renew the GitHub token | New token (step 5) → `scripts/create-secrets.sh` → `scripts/deploy.sh github-runner` |
 | teruel IP or OS changed | `scripts/setup-teruel.sh …` → `scripts/create-secrets.sh` → `scripts/deploy.sh github-runner` |
 | Back up the factory | Copy `/srv/factory` (the Secrets can be recreated with step 6) |

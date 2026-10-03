@@ -6,6 +6,7 @@
 |------|---------|----------|--------|-------------|
 | `REPO_URL` | runner | yes | Deployment env | `https://github.com/redjhawk/pricetracker` |
 | `GITHUB_PAT` | runner | yes | Secret `runner-pat` | Fine-grained PAT (Administration r/w) used to get registration/removal tokens |
+| `CLAUDE_CODE_OAUTH_TOKEN` | runner (ai-dev jobs) | for ai-dev | Secret `claude-oauth-token` | Claude subscription token from `claude setup-token` (ADR-0010) |
 | `RUNNER_NAME` / `RUNNER_LABELS` | runner | no | Deployment env | Default `barcelona`; workflows target `runs-on: [self-hosted, barcelona]` |
 
 ## Kubernetes Secrets
@@ -14,7 +15,7 @@ Created by `scripts/create-secrets.sh` (interactive, nothing stored in git).
 
 | Secret | Keys | Consumed by |
 |--------|------|-------------|
-| `factory-secrets` | `runner-pat` | github-runner |
+| `factory-secrets` | `runner-pat`, `claude-oauth-token` (optional) | github-runner |
 | `factory-ssh` | `id_ed25519`, `known_hosts`, `config` (maps `teruel` → IP, user `deploy`) | github-runner, mounted at `/etc/factory-ssh` |
 
 ## Images
@@ -23,13 +24,10 @@ Created by `scripts/create-secrets.sh` (interactive, nothing stored in git).
 |-------|-----------|-------------|
 | `local-gh-runner:latest` | `runner/` (Debian 12, Node 22, Go `GO_VERSION` 1.25.0, Playwright Chromium `PLAYWRIGHT_VERSION` 1.63.0, runner `RUNNER_VERSION`=latest) | `Never` |
 
-## GitHub secrets (pricetracker › Settings › Secrets and variables › Actions)
+## GitHub secrets
 
-| Secret | Used by | Description |
-|--------|---------|-------------|
-| `CLAUDE_CODE_OAUTH_TOKEN` | `ai-dev` workflow | Long-lived token from `claude setup-token`; runs count against the Claude subscription |
-
-Model, turn limit and allowed tools are set in `pipelines/pricetracker/ai-dev.yml`.
+None. The Claude token is kept on barcelona (ADR-0010). Model, turn limit and allowed tools are set
+in `pipelines/pricetracker/ai-dev.yml`.
 
 ## Storage
 

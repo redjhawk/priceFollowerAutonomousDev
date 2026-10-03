@@ -14,9 +14,11 @@ read_secret() {
 
 TERUEL_ADDRESS="$(read -rp "teruel IP address (as seen from barcelona): " a; echo "$a")"
 RUNNER_PAT="$(read_secret "GitHub PAT for runner registration (pricetracker: Administration read/write)")"
+CLAUDE_TOKEN="$(read_secret "Claude token from 'claude setup-token' (empty to skip ai-dev)")"
 
 kubectl create secret generic factory-secrets \
   --from-literal=runner-pat="$RUNNER_PAT" \
+  ${CLAUDE_TOKEN:+--from-literal=claude-oauth-token="$CLAUDE_TOKEN"} \
   --dry-run=client -o yaml | kubectl apply -f -
 
 # Pods do not resolve LAN hostnames, so the SSH config maps "teruel" to its address
