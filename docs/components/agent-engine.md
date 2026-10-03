@@ -1,6 +1,6 @@
 # Component: agent-engine
 
-- **Status:** Skeleton
+- **Status:** Skeleton — implementation blocked, decision needed
 - **Source:** `agent-engine/`
 
 ## Responsibility
@@ -22,3 +22,12 @@ Receive Linear webhooks, run a LangGraph loop backed by Claude, and push small a
 - No signature verification, no priority/state filter, agent not wired (F-03..F-05).
 - Webhook should return quickly and run the agent in the background (Linear retries slow responses).
 - `langgraph` / `langchain-anthropic` are unpinned: pin once versions are validated.
+
+## Pending decision (2026-10-03)
+Planned design: on a Linear webhook (high priority → In Progress), reset a persistent clone of
+pricetracker, run Claude Code headless (`claude -p`) in it so it follows `AGENTS.md` and the roles in
+`.agents/roles/` as subagents, then push its commits to `main` and comment on the Linear ticket.
+Running Claude Code unattended needs `--dangerously-skip-permissions` (or an explicit allow-list of
+tools) plus write access to `main`; this was stopped by the safety check and needs the owner's
+explicit go-ahead and chosen guardrails before it is built. LangGraph would be replaced by Claude Code
+(see ADR to be written).
