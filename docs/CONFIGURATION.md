@@ -4,8 +4,9 @@
 
 | Name | Used by | Required | Source | Description |
 |------|---------|----------|--------|-------------|
-| `REPO_URL` | runner | yes | Deployment env | GitHub repo URL the runner registers to |
-| `RUNNER_TOKEN` | runner | yes | Secret | Runner **registration** token (expires after 1 h; not a PAT) |
+| `REPO_URL` | runner | yes | Deployment env | `https://github.com/redjhawk/pricetracker` |
+| `GITHUB_PAT` | runner | yes | Secret `runner-pat` | Fine-grained PAT (Administration r/w) used to get registration/removal tokens |
+| `RUNNER_NAME` / `RUNNER_LABELS` | runner | no | Deployment env | Default `barcelona`; workflows target `runs-on: [self-hosted, barcelona]` |
 | `GITHUB_TOKEN` | agent-engine | yes | Secret | Token used to clone and push |
 | `ANTHROPIC_API_KEY` | agent-engine | yes | Secret | Claude API key |
 | `ANTHROPIC_MODEL` | agent-engine | no | Deployment env | Claude model id (default `claude-sonnet-5-5`) |
@@ -14,29 +15,28 @@
 
 ## Kubernetes Secrets
 
+Created by `scripts/create-secrets.sh` (interactive, nothing stored in git).
+
 | Secret | Keys | Consumed by |
 |--------|------|-------------|
-| `factory-secrets` | `github-token`, `runner-token`, `anthropic-api-key`, `linear-api-key`, `linear-webhook-secret` | ai-agent-engine, github-runner |
-
-Template: `k3s/secrets.example.yaml` → copy to `k3s/factory.secret.yaml` (git-ignored).
+| `factory-secrets` | `runner-pat` (+ agent keys once the agent engine is built) | github-runner |
+| `factory-ssh` | `id_ed25519`, `known_hosts`, `config` (maps `teruel` → IP, user `deploy`) | github-runner, mounted at `/etc/factory-ssh` |
 
 ## Images
 
 | Image | Built from | Pull policy |
 |-------|-----------|-------------|
-| `local-gh-runner:latest` | `runner/` (Debian 12 (bookworm-slim), runner `RUNNER_VERSION` build arg, default 2.311.0) | `Never` |
-| `ai-agent-engine:latest` | `agent-engine/` (python:3.11-slim, Debian-based) | `Never` |
+| `local-gh-runner:latest` | `runner/` (Debian 12, Node 22, Go `GO_VERSION` 1.25.0, runner `RUNNER_VERSION`=latest) | `Never` |
+| `ai-agent-engine:latest` | `agent-engine/` (python:3.11-slim) — pending | `Never` |
 
-## Ports / Services
+## Storage
 
-| Service | Port | Exposed how | Purpose |
-|---------|------|-------------|---------|
-| ai-agent-engine | 8000 (container) | _tbd_ (tunnel needed: Linear must reach it) | Receives Linear webhooks |
+See [ADR-0007](decisions/0007-host-storage.md): everything persistent is under `/srv/factory` on barcelona.
 
-## Deploy target (runner → Raspberry Pi 2)
+## Target device (teruel)
 
-| Name | Used by | Source | Description |
-|------|---------|--------|-------------|
-| `PI_HOST` | CI workflow | Secret | Pi hostname/IP on the LAN |
-| `PI_USER` | CI workflow | Secret | SSH user on the Pi |
-| `PI_SSH_KEY` | CI workflow | Secret | Private key for deploy |
+| Item | Value |
+|------|-------|
+| SSH user | `deploy` (key-only; sudo limited to `bash ./install-pricefollower.sh ./pricefollower`) |
+| App | `/opt/pricefollower/pricefollower`, systemd `pricefollower`, port 3001 |
+| Data | `/var/lib/pricefollower/pricefollower.sqlite` |

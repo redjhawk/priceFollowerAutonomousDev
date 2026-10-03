@@ -23,7 +23,7 @@
 3. Engine clones the target repo into a workspace and runs the LangGraph agent loop.
 4. Agent commits and pushes small, atomic commits directly to `main`.
 5. Push triggers a GitHub Actions workflow with `runs-on: self-hosted`.
-6. The runner pod in k3s picks up the job, compiles for `linux/arm/v7`, tests, and deploys to the Raspberry Pi 2 over SSH.
+6. The runner pod in k3s picks up the job, runs `go vet`, `go test`, `npm run build`, then `scripts/deploy-armv6.sh teruel` (cross-compiled Go binary, installed over SSH as a systemd service).
 
 ## Trust boundaries & security notes
 
@@ -41,3 +41,13 @@
 | LLM | Claude (Anthropic API) | [0004](decisions/0004-claude-llm.md) |
 | Deploy target | Raspberry Pi 2 (ARMv7, 1 GB RAM) | [0005](decisions/0005-raspberry-pi-2-target.md) |
 | Base images | Debian (`bookworm-slim`) | [0006](decisions/0006-debian-base-images.md) |
+| Storage | `hostPath` under `/srv/factory` on barcelona | [0007](decisions/0007-host-storage.md) |
+| Runner auth & triggers | PAT-based self-registration; push-only pipeline | [0008](decisions/0008-runner-registration.md) |
+
+## Hosts
+
+| Host | Role |
+|------|------|
+| barcelona | Factory server (Debian, x86): Docker, k3s, runner, agent engine, `/srv/factory` storage |
+| teruel | Raspberry Pi 2 target: `pricefollower` systemd service on port 3001, data in `/var/lib/pricefollower` |
+| GitHub | `redjhawk/pricetracker` (public): source code, dev-agent roles in `.agents/roles/`, workflow |
