@@ -1,14 +1,14 @@
 # priceFollower Autonomous Dev — Autonomous Software Factory
 
-A local software factory: project-management tickets (Linear) trigger an AI agent
-(Python + LangGraph + Claude) running in a local **k3s** cluster. The agent writes code and pushes it to a cloud
-GitHub repo. A **self-hosted GitHub Actions runner**, also in k3s, compiles, tests and deploys locally.
+A local software factory for [redjhawk/pricetracker](https://github.com/redjhawk/pricetracker).
+You open a GitHub issue with the label `ai-dev`; Claude implements it on the self-hosted runner on
+**barcelona**, following the project's skills and roles, and opens a pull request. When you merge it,
+the same runner tests, builds and deploys the app to the Raspberry Pi **teruel**.
 
 ```
-[ Linear ] --webhook--> [ k3s: AI Agent Engine ] --push--> [ GitHub repo ]
-                                                                              │ Actions job
-                                                                              ▼
-                                                        [ k3s: self-hosted runner ] -> Raspberry Pi 2
+[ issue + label ai-dev ] --> [ barcelona: ai-dev (Claude) ] --> PR --you merge--> main
+                                                                                   │
+[ teruel: pricefollower ] <------ deploy ------ [ barcelona: ci-deploy ] <---------┘
 ```
 
 ## Documentation map
@@ -28,10 +28,10 @@ GitHub repo. A **self-hosted GitHub Actions runner**, also in k3s, compiles, tes
 ## Repository layout
 
 ```
-agent-engine/   FastAPI webhook listener + LangGraph agent (Dockerfile, main.py, agent/)
+pipelines/      GitHub Actions workflows to copy into pricetracker (ai-dev, ci-deploy)
 runner/         GitHub Actions self-hosted runner image (Dockerfile, entrypoint.sh)
 k3s/            Kubernetes manifests (Secrets, Deployments, Services)
-scripts/        Helper scripts (build/import images, deploy) — register each in docs/SCRIPTS.md
+scripts/        Setup and operation scripts (server, Pi, secrets, build, deploy) — register each in docs/SCRIPTS.md
 docs/           All project documentation
 ```
 

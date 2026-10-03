@@ -4,7 +4,7 @@
 - **Status:** Accepted
 
 ## Context
-Pods are disposable; runner work dirs, build caches, agent workspaces and logs must survive restarts
+Pods are disposable; runner work dirs, and build caches must survive restarts
 and image rebuilds.
 
 ## Decision
@@ -17,7 +17,6 @@ Single-node cluster, so use `hostPath` volumes under `/srv/factory` on barcelona
 | `/srv/factory/runner/cache` | `/home/runner/.cache` | Go build cache |
 | `/srv/factory/runner/go` | `/home/runner/go` | Go module cache |
 | `/srv/factory/runner/npm` | `/home/runner/.npm` | npm cache |
-| `/srv/factory/agent` | (agent engine, pending) | Workspaces, job records, logs |
 | `/srv/factory/ssh` | — (copied into Secret `factory-ssh`) | Deploy key, known_hosts |
 
 ## Consequences

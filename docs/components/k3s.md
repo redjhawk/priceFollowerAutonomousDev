@@ -1,15 +1,15 @@
 # Component: k3s
 
-- **Status:** Runner done; agent engine pending
+- **Status:** Done
 - **Source:** `k3s/`
 
 ## Files
 | File | Description |
 |------|-------------|
-| `cluster-manifests.yaml` | Deployment `ai-agent-engine` (skeleton) and `github-runner` (Recreate strategy, fsGroup 1000, hostPath volumes, SSH Secret), both `imagePullPolicy: Never` |
+| `cluster-manifests.yaml` | Deployment `github-runner` (Recreate strategy, fsGroup 1000, hostPath volumes under `/srv/factory/runner`, SSH Secret), `imagePullPolicy: Never` |
 
 Secrets are created by `scripts/create-secrets.sh`, never stored in git.
 
 ## Known limitations / TODO
-- No Service/tunnel for the agent webhook yet.
-- No resource requests/limits, no liveness probes.
+- No resource requests/limits, no liveness probe.
+- One runner replica: ai-dev and ci-deploy jobs run one at a time.

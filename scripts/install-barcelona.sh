@@ -9,7 +9,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 FACTORY_DIR=/srv/factory
-OWNER_UID=1000  # uid of the "runner" and "agent" users inside the images
+OWNER_UID=1000  # uid of the "runner" user inside the image
 
 echo "Installing base packages and Docker..."
 apt-get update
@@ -22,10 +22,10 @@ if ! command -v k3s >/dev/null 2>&1; then
 fi
 
 echo "Creating persistent storage under $FACTORY_DIR..."
-for dir in runner/work runner/cache runner/go runner/npm agent ssh; do
+for dir in runner/work runner/cache runner/go runner/npm ssh; do
   install -d -m 0750 "$FACTORY_DIR/$dir"
 done
-chown -R "$OWNER_UID:$OWNER_UID" "$FACTORY_DIR/runner" "$FACTORY_DIR/agent"
+chown -R "$OWNER_UID:$OWNER_UID" "$FACTORY_DIR/runner"
 chmod 0700 "$FACTORY_DIR/ssh"
 
 if [ ! -f "$FACTORY_DIR/ssh/id_ed25519" ]; then
