@@ -15,6 +15,7 @@ GitHub repo. A **self-hosted GitHub Actions runner**, also in k3s, compiles, tes
 
 | Doc | What it tracks |
 |-----|----------------|
+| [docs/SETUP.md](docs/SETUP.md) | Step-by-step setup of the whole system |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, data flow, tech stack, trust boundaries |
 | [docs/SCRIPTS.md](docs/SCRIPTS.md) | Registry of **every** script/entrypoint: purpose, inputs, outputs |
 | [docs/FEATURES.md](docs/FEATURES.md) | Functionality list and implementation status |
@@ -36,4 +37,4 @@ docs/           All project documentation
 
 ## Quick start
 
-See [docs/runbooks/bootstrap.md](docs/runbooks/bootstrap.md).
+Full step-by-step guide: [docs/SETUP.md](docs/SETUP.md). Short command list: [docs/runbooks/bootstrap.md](docs/runbooks/bootstrap.md).
