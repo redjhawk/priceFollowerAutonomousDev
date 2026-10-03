@@ -23,6 +23,12 @@ ARG GO_VERSION=1.25.0
 RUN curl -fsSL https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz | tar -C /usr/local -xz
 ENV PATH=/usr/local/go/bin:$PATH
 
+# Chromium for pricetracker's Playwright tests (QA role); version matches its package.json
+ARG PLAYWRIGHT_VERSION=1.63.0
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN npx -y playwright@${PLAYWRIGHT_VERSION} install --with-deps chromium \
+    && rm -rf /var/lib/apt/lists/* /root/.npm
+
 # Create a non-root runner user (sudo is needed by installdependencies.sh only)
 RUN useradd -m -u 1000 runner && usermod -aG sudo runner
 RUN echo "runner ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers

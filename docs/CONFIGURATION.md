@@ -21,7 +21,7 @@ Created by `scripts/create-secrets.sh` (interactive, nothing stored in git).
 
 | Image | Built from | Pull policy |
 |-------|-----------|-------------|
-| `local-gh-runner:latest` | `runner/` (Debian 12, Node 22, Go `GO_VERSION` 1.25.0, runner `RUNNER_VERSION`=latest) | `Never` |
+| `local-gh-runner:latest` | `runner/` (Debian 12, Node 22, Go `GO_VERSION` 1.25.0, Playwright Chromium `PLAYWRIGHT_VERSION` 1.63.0, runner `RUNNER_VERSION`=latest) | `Never` |
 
 ## GitHub secrets (pricetracker › Settings › Secrets and variables › Actions)
 

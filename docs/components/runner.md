@@ -10,7 +10,7 @@ barcelona. Runs `pipelines/pricetracker/ci-deploy.yml`: vet, test, build, deploy
 ## Files
 | File | Description |
 |------|-------------|
-| `Dockerfile` | Debian 12 slim; git, ssh, rsync, jq, unzip (Bun install for claude-code-action), build-essential; Node 22 (NodeSource); Go `GO_VERSION`; runner `RUNNER_VERSION` (latest by default) + its dependencies; user `runner` uid 1000 |
+| `Dockerfile` | Debian 12 slim; git, ssh, rsync, jq, unzip (Bun install for claude-code-action), build-essential; Node 22 (NodeSource); Go `GO_VERSION`; Playwright Chromium in `/ms-playwright` (`PLAYWRIGHT_VERSION`); runner `RUNNER_VERSION` (latest by default) + its dependencies; user `runner` uid 1000 |
 | `entrypoint.sh` | Copies SSH files from `/etc/factory-ssh`, gets registration token via PAT, `config.sh --replace`, `run.sh`, removal token + `config.sh remove` on exit/SIGTERM |
 
 ## Interfaces
