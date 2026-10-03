@@ -16,6 +16,7 @@ the same runner tests, builds and deploys the app to the Raspberry Pi **teruel**
 | Doc | What it tracks |
 |-----|----------------|
 | [docs/SETUP.md](docs/SETUP.md) | Step-by-step setup of the whole system |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Ideas for later versions (Linear integration, browser QA, …) |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, data flow, tech stack, trust boundaries |
 | [docs/SCRIPTS.md](docs/SCRIPTS.md) | Registry of **every** script/entrypoint: purpose, inputs, outputs |
 | [docs/FEATURES.md](docs/FEATURES.md) | Functionality list and implementation status |
