@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   claude:
-    # Public repo: only the owner may trigger work on barcelona and spend API credits.
+    # Public repo: only the owner may trigger work on barcelona and use the Claude subscription.
     if: >-
       github.repository == 'redjhawk/pricetracker' &&
       github.actor == 'redjhawk' &&
@@ -45,7 +45,8 @@ jobs:
 
       - uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # OAuth token from `claude setup-token`: runs use the Claude Pro/Max subscription, not the API
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           label_trigger: ai-dev
           trigger_phrase: "@claude"
           branch_prefix: ai-dev/

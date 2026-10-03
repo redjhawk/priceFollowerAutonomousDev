@@ -21,6 +21,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Dates are ISO (YYYY-MM-
   AGENTS.md, skills and roles (ADR-0009); setup and usage steps in SETUP.md.
 - 2026-10-03 — Roadmap keeping the Linear integration for a later version.
 
+### Changed
+- 2026-10-04 — `ai-dev` uses the Claude subscription (`CLAUDE_CODE_OAUTH_TOKEN`) instead of an API key.
+
 ### Removed
 - 2026-10-03 — Agent engine skeleton (FastAPI/LangGraph) and its k3s Deployment; Linear trigger and
   direct commits to `main` superseded by ADR-0009.

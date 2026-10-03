@@ -27,7 +27,7 @@ Created by `scripts/create-secrets.sh` (interactive, nothing stored in git).
 
 | Secret | Used by | Description |
 |--------|---------|-------------|
-| `ANTHROPIC_API_KEY` | `ai-dev` workflow | Claude API key |
+| `CLAUDE_CODE_OAUTH_TOKEN` | `ai-dev` workflow | Long-lived token from `claude setup-token`; runs count against the Claude subscription |
 
 Model, turn limit and allowed tools are set in `pipelines/pricetracker/ai-dev.yml`.
 

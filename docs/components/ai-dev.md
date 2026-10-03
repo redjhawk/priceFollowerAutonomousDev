@@ -30,7 +30,8 @@ the action itself on a branch `ai-dev/...`; it never pushes to `main`.
 4. You review and merge → `ci-deploy` deploys to teruel.
 
 ## Configuration
-- GitHub secret `ANTHROPIC_API_KEY` in pricetracker.
+- GitHub secret `CLAUDE_CODE_OAUTH_TOKEN` in pricetracker (from `claude setup-token`; uses the
+  Claude subscription, no API billing).
 - Claude GitHub App installed on pricetracker (provides the GitHub token for comments and pushes).
 - Model `claude-sonnet-5-5`, max 200 turns, 120 min timeout (in the workflow file).
 

@@ -37,7 +37,7 @@
 
 - pricetracker is public: both workflows refuse fork code; `ai-dev` runs only for `redjhawk`.
 - Claude's tools are an allow-list (no arbitrary shell, no push); the action pushes the branch.
-- Runner PAT and deploy key live in k8s Secrets; `ANTHROPIC_API_KEY` is a GitHub secret. None in git.
+- Runner PAT and deploy key live in k8s Secrets; `CLAUDE_CODE_OAUTH_TOKEN` is a GitHub secret. None in git.
 - The `deploy` user on teruel can only run the installer as root.
 
 ## Decisions in effect

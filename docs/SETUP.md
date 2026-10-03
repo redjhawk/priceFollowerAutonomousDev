@@ -31,7 +31,8 @@ binary to teruel and restarts the service.
 
 **GitHub and Anthropic**
 - Admin access to `redjhawk/pricetracker`.
-- An Anthropic API key (console.anthropic.com › API keys), used by Claude in the `ai-dev` workflow.
+- A Claude Pro or Max subscription and the `claude` CLI logged in on any machine, used to create
+  the token for the `ai-dev` workflow.
 
 ## 2. Get this repository onto barcelona
 
@@ -168,8 +169,10 @@ data (`/var/lib/pricefollower/pricefollower.sqlite` on teruel) is kept across de
 1. **Install the Claude GitHub App** on pricetracker: open https://github.com/apps/claude →
    *Install* → *Only select repositories* → `pricetracker`. It gives the workflow the GitHub token it
    uses to comment and push branches.
-2. **Add the API key:** pricetracker → **Settings › Secrets and variables › Actions › New repository
-   secret** → name `ANTHROPIC_API_KEY`, value: your Anthropic API key.
+2. **Add your Claude token:** on a machine where `claude` is logged in, run `claude setup-token`,
+   log in in the browser and copy the printed token. Then pricetracker → **Settings › Secrets and
+   variables › Actions › New repository secret** → name `CLAUDE_CODE_OAUTH_TOKEN`, value: the token.
+   Treat it like a password.
 3. **Create the label:** pricetracker → **Issues › Labels › New label** → name `ai-dev`.
 
 ## 11. Use it: from issue to deployment
@@ -190,7 +193,8 @@ data (`/var/lib/pricefollower/pricefollower.sqlite` on teruel) is kept across de
 Notes:
 - One runner does everything: while Claude works, deployments wait in the queue.
 - Browser tests (Playwright) are not available yet; Claude marks interface QA as blocked.
-- Each run uses Anthropic API credits; the model and turn limit are set in `ai-dev.yml`.
+- Runs count against your Claude subscription limits, shared with your own Claude use; the model
+  and turn limit are set in `ai-dev.yml`.
 - Planning in Linear is on the [roadmap](ROADMAP.md).
 
 ## Day-to-day operations
