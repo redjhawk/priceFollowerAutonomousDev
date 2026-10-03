@@ -1,0 +1,73 @@
+# Secrets live in factory.secret.yaml (see secrets.example.yaml) and are never committed.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-agent-engine
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-agent-engine
+  template:
+    metadata:
+      labels:
+        app: ai-agent-engine
+    spec:
+      containers:
+      - name: agent
+        image: ai-agent-engine:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+        env:
+        - name: ANTHROPIC_MODEL
+          value: "claude-sonnet-5-5"
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: factory-secrets
+              key: github-token
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: factory-secrets
+              key: anthropic-api-key
+        - name: LINEAR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: factory-secrets
+              key: linear-api-key
+        - name: LINEAR_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: factory-secrets
+              key: linear-webhook-secret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-runner
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: github-runner
+  template:
+    metadata:
+      labels:
+        app: github-runner
+    spec:
+      containers:
+      - name: runner
+        image: local-gh-runner:latest
+        imagePullPolicy: Never
+        env:
+        - name: REPO_URL
+          value: "https://github.com/YOUR_USERNAME/YOUR_REPOSITORY"
+        - name: RUNNER_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: factory-secrets
+              key: runner-token
