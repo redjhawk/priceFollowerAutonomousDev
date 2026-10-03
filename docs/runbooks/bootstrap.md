@@ -27,8 +27,10 @@ scripts/deploy.sh
 kubectl get pods -w
 ```
 
-## 5. Install the pipeline in pricetracker
-Copy `pipelines/pricetracker/ci-deploy.yml` to `pricetracker/.github/workflows/ci-deploy.yml` and push.
+## 5. Install the workflows in pricetracker
+Copy `pipelines/pricetracker/ci-deploy.yml` and `ai-dev.yml` to `pricetracker/.github/workflows/` and push.
+For ai-dev: install the Claude GitHub App, add the `ANTHROPIC_API_KEY` secret and create the `ai-dev` label
+(details in [SETUP.md](../SETUP.md#10-enable-the-ai-developer)).
 In GitHub: *Settings › Actions › General › Fork pull request workflows* → require approval for all
 outside contributors (repo is public, ADR-0008).
 
