@@ -17,7 +17,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Dates are ISO (YYYY-MM-
 
 - 2026-10-03 — Step-by-step setup guide `docs/SETUP.md`.
 
+- 2026-10-03 — AI developer: `ai-dev` workflow (GitHub issue → Claude → PR) following pricetracker's
+  AGENTS.md, skills and roles (ADR-0009); setup and usage steps in SETUP.md.
+- 2026-10-03 — Roadmap keeping the Linear integration for a later version.
+
+### Removed
+- 2026-10-03 — Agent engine skeleton (FastAPI/LangGraph) and its k3s Deployment; Linear trigger and
+  direct commits to `main` superseded by ADR-0009.
+
 ### Fixed
+- 2026-10-03 — Runner image installs `unzip`, required by claude-code-action.
 - 2026-10-03 — `setup-teruel.sh` reads the root-only deploy public key through sudo.
 
 ### Changed
