@@ -1,10 +1,8 @@
 # Setting up the autonomous factory, step by step
 
-This guide takes you from two blank machines to a working pipeline: code pushed to
-`redjhawk/pricetracker` is tested on **barcelona** and deployed to **teruel** automatically.
-
-> **Current status.** The runner, storage and deploy pipeline are ready. The AI dev agent
-> (Linear ticket → code → commit) is not built yet; see [step 10](#10-ai-dev-agent-not-available-yet).
+This guide takes you from two blank machines to a working factory: you open a GitHub issue in
+`redjhawk/pricetracker`, Claude implements it on **barcelona** and opens a pull request, and once
+you merge it the code is tested and deployed to **teruel** automatically.
 
 ## Overview
 
@@ -12,10 +10,11 @@ This guide takes you from two blank machines to a working pipeline: code pushed 
 |---------|-----------|-----------------|
 | **barcelona** | Factory server, Debian, x86-64 | Docker, k3s, GitHub Actions runner, `/srv/factory` storage |
 | **teruel** | Raspberry Pi 2 | The `pricefollower` app as a systemd service on port 3001 |
-| **GitHub** | `redjhawk/pricetracker` | Source code and the `ci-deploy` workflow |
+| **GitHub** | `redjhawk/pricetracker` | Source code, issues, the `ai-dev` and `ci-deploy` workflows |
 
-Flow: push to `main` → GitHub queues `ci-deploy` → the runner pod on barcelona runs vet, tests
-and build → `scripts/deploy-armv6.sh teruel` copies the binary to teruel and restarts the service.
+Flow: issue labelled `ai-dev` → `ai-dev` runs Claude on barcelona → branch + PR → you merge →
+`ci-deploy` runs vet, tests and build on barcelona → `scripts/deploy-armv6.sh teruel` copies the
+binary to teruel and restarts the service.
 
 ## 1. Prerequisites
 
@@ -30,8 +29,9 @@ and build → `scripts/deploy-armv6.sh teruel` copies the binary to teruel and r
 - An admin account that can `sudo` (used once, in step 4).
 - A fixed IP address (DHCP reservation in your router is enough).
 
-**GitHub**
+**GitHub and Anthropic**
 - Admin access to `redjhawk/pricetracker`.
+- An Anthropic API key (console.anthropic.com › API keys), used by Claude in the `ai-dev` workflow.
 
 ## 2. Get this repository onto barcelona
 
@@ -51,8 +51,8 @@ sudo scripts/install-barcelona.sh
 This script:
 - installs `docker.io`, `git`, `jq`, `rsync`, `openssh-client` and `curl`;
 - installs k3s, with a kubeconfig readable by your user;
-- creates the persistent storage under `/srv/factory` (runner work dir, Go and npm caches, agent
-  folder, SSH folder), owned by uid 1000, the user inside the containers;
+- creates the persistent storage under `/srv/factory` (runner work dir, Go and npm caches, SSH
+  folder), owned by uid 1000, the user inside the containers;
 - generates the deploy key `/srv/factory/ssh/id_ed25519`.
 
 Check it:
@@ -60,7 +60,7 @@ Check it:
 ```bash
 kubectl get nodes          # barcelona  Ready
 sudo docker info >/dev/null && echo docker ok
-ls /srv/factory            # agent  runner  ssh
+ls /srv/factory            # runner  ssh
 ```
 
 To run `docker` without `sudo`, add yourself to the docker group and log in again:
@@ -122,7 +122,7 @@ kubectl get pods -w        # wait for github-runner-... Running, then Ctrl+C
 ```
 
 The build downloads Node 22, Go and the latest GitHub Actions runner, so the first build takes a
-few minutes. The `ai-agent-engine` deployment is created with 0 replicas, so no pod appears for it.
+few minutes.
 
 Check it:
 
@@ -132,17 +132,17 @@ kubectl logs -l app=github-runner --tail=20     # "Listening for Jobs"
 
 GitHub → pricetracker → **Settings › Actions › Runners**: runner `barcelona` is **Idle**.
 
-## 8. Install the pipeline in pricetracker
+## 8. Install the workflows in pricetracker
 
-The workflow lives in this repo and must be added to pricetracker:
+Both workflows live in this repo and must be added to pricetracker:
 
 ```bash
 git clone https://github.com/redjhawk/pricetracker.git ~/pricetracker
 mkdir -p ~/pricetracker/.github/workflows
-cp pipelines/pricetracker/ci-deploy.yml ~/pricetracker/.github/workflows/
+cp pipelines/pricetracker/ci-deploy.yml pipelines/pricetracker/ai-dev.yml ~/pricetracker/.github/workflows/
 cd ~/pricetracker
-git add .github/workflows/ci-deploy.yml
-git commit -m "ci: add test and deploy-to-teruel workflow"
+git add .github/workflows/ci-deploy.yml .github/workflows/ai-dev.yml
+git commit -m "ci: add AI developer and deploy-to-teruel workflows"
 git push origin main
 ```
 
@@ -152,8 +152,8 @@ external contributors**. Making the repository private is safer still.
 
 ## 9. First deployment and verification
 
-The push in step 8 already starts a run. You can also start one by hand: GitHub → pricetracker →
-**Actions › ci-deploy › Run workflow**.
+The push in step 8 already starts a `ci-deploy` run. You can also start one by hand: GitHub →
+pricetracker → **Actions › ci-deploy › Run workflow**.
 
 1. Follow the run in the **Actions** tab; all steps should turn green, ending with
    *Deployment complete: pricefollower is active on teruel*.
@@ -163,23 +163,42 @@ The push in step 8 already starts a run. You can also start one by hand: GitHub 
 From now on, every push to `main` of pricetracker is tested and deployed automatically. The app's
 data (`/var/lib/pricefollower/pricefollower.sqlite` on teruel) is kept across deployments.
 
-## 10. AI dev agent (not available yet)
+## 10. Enable the AI developer
 
-Planned flow: a high-priority Linear ticket moves to *In Progress* → the agent engine on barcelona
-pulls pricetracker, runs the dev-agent roles in `.agents/roles/` → commits → push → step 9 deploys.
+1. **Install the Claude GitHub App** on pricetracker: open https://github.com/apps/claude →
+   *Install* → *Only select repositories* → `pricetracker`. It gives the workflow the GitHub token it
+   uses to comment and push branches.
+2. **Add the API key:** pricetracker → **Settings › Secrets and variables › Actions › New repository
+   secret** → name `ANTHROPIC_API_KEY`, value: your Anthropic API key.
+3. **Create the label:** pricetracker → **Issues › Labels › New label** → name `ai-dev`.
 
-It is waiting for a decision on how much freedom the agent gets: what it may run and whether it may
-push to `main` unattended. See [components/agent-engine.md](components/agent-engine.md). Once it is
-built, this guide will gain these steps:
-- creating the Anthropic and Linear API keys;
-- exposing the webhook (for example with a Cloudflare tunnel);
-- configuring the Linear webhook.
+## 11. Use it: from issue to deployment
+
+1. **Open an issue** in pricetracker describing what you want, as you would for a developer:
+   the behaviour, where it shows up, and what "done" looks like. Clear issues avoid question rounds.
+2. **Add the label `ai-dev`** (when creating the issue or later). Only your account (`redjhawk`)
+   can start the workflow.
+3. **Watch progress** in the issue: Claude posts a comment that it updates as it goes. It follows
+   pricetracker's `AGENTS.md`: reads the four skills, writes functional and technical specifications,
+   implements, reviews, and records everything under `doc/changes/`.
+4. **Answer questions:** if Claude needs a product decision or approval of an API change, it asks
+   in the issue and stops. Reply with a comment that starts with `@claude` and contains your answer.
+5. **Open the PR:** when it is done, Claude's comment contains a link to create the pull request from
+   its branch `ai-dev/...`. Review the changes; you can ask for fixes with `@claude` comments in the PR.
+6. **Merge** the PR. `ci-deploy` starts on its own and deploys to teruel (step 9).
+
+Notes:
+- One runner does everything: while Claude works, deployments wait in the queue.
+- Browser tests (Playwright) are not available yet; Claude marks interface QA as blocked.
+- Each run uses Anthropic API credits; the model and turn limit are set in `ai-dev.yml`.
+- Planning in Linear is on the [roadmap](ROADMAP.md).
 
 ## Day-to-day operations
 
 | Task | Command |
 |------|---------|
 | Runner logs | `kubectl logs -l app=github-runner -f` |
+| See what Claude did | pricetracker → **Actions › ai-dev** → the run's log, or the issue comments |
 | Restart the runner | `scripts/deploy.sh github-runner` |
 | Rebuild the runner image (e.g. new Go version) | `scripts/build-and-import.sh runner && scripts/deploy.sh github-runner` |
 | Renew the GitHub token | New token (step 5) → `scripts/create-secrets.sh` → `scripts/deploy.sh github-runner` |
