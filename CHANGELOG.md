@@ -25,6 +25,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Dates are ISO (YYYY-MM-
 - 2026-10-04 — `ai-dev` uses the Claude subscription (`CLAUDE_CODE_OAUTH_TOKEN`) instead of an API key.
 - 2026-10-04 — Claude token kept on barcelona in `factory-secrets` instead of a GitHub secret (ADR-0010).
 - 2026-10-04 — Runner image bundles Playwright Chromium; Claude runs interface QA on barcelona.
+- 2026-10-04 — `ai-dev` uses Claude Opus 5.5 with low effort (was Sonnet 5.5).
 
 ### Removed
 - 2026-10-03 — Agent engine skeleton (FastAPI/LangGraph) and its k3s Deployment; Linear trigger and
