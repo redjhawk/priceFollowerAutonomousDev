@@ -1,39 +1,44 @@
 # Runbook: bootstrap
 
-Run on the k3s server from the repo root.
+Everything runs on **barcelona** from the repo root unless stated otherwise.
 
-## 1. Secrets
+## 1. Install the server (once)
 ```bash
-cp k3s/secrets.example.yaml k3s/factory.secret.yaml   # git-ignored
-$EDITOR k3s/factory.secret.yaml
+sudo scripts/install-barcelona.sh
 ```
-Get `runner-token` from GitHub → Settings › Actions › Runners › New self-hosted runner (valid 1 h).
+Installs Docker, k3s, git/jq/rsync/ssh, creates `/srv/factory`, generates `/srv/factory/ssh/id_ed25519`.
 
-## 2. Build & import images
+## 2. Prepare teruel (once)
+```bash
+scripts/setup-teruel.sh <admin-user>@teruel
+ssh -i /srv/factory/ssh/id_ed25519 deploy@teruel true   # must succeed without a password
+```
+
+## 3. Secrets
+Create a fine-grained GitHub PAT for `redjhawk/pricetracker` with *Administration: read and write*.
+```bash
+scripts/create-secrets.sh
+```
+
+## 4. Build, import, deploy
 ```bash
 scripts/build-and-import.sh runner
-scripts/build-and-import.sh agent-engine
-```
-Manual equivalent:
-```bash
-docker build -t local-gh-runner:latest runner
-docker save local-gh-runner:latest -o local-gh-runner.tar
-sudo k3s ctr images import local-gh-runner.tar
-```
-
-## 3. Deploy
-```bash
 scripts/deploy.sh
 kubectl get pods -w
 ```
 
-## 4. Verify
-- `kubectl get pods` → both pods `Running`.
-- GitHub → **Settings › Actions › Runners**: runner is **Idle**.
-- `kubectl port-forward deploy/ai-agent-engine 8000:8000` then `curl localhost:8000/health`.
+## 5. Install the pipeline in pricetracker
+Copy `pipelines/pricetracker/ci-deploy.yml` to `pricetracker/.github/workflows/ci-deploy.yml` and push.
+In GitHub: *Settings › Actions › General › Fork pull request workflows* → require approval for all
+outside contributors (repo is public, ADR-0008).
 
-## 5. Logs
+## 6. Verify
+- GitHub → pricetracker → *Settings › Actions › Runners*: `barcelona` is **Idle**.
+- Run the workflow manually (*Actions › ci-deploy › Run workflow*); then on teruel:
+  `systemctl status pricefollower` and open `http://teruel:3001`.
+
+## Logs
 ```bash
-kubectl logs -l app=ai-agent-engine -f
 kubectl logs -l app=github-runner -f
+ssh deploy@teruel journalctl -u pricefollower -f   # may need sudo depending on groups
 ```
