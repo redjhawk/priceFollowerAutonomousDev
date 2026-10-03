@@ -5,6 +5,7 @@ Every executable file in the repo gets one entry. Keep the table sorted by path.
 | Path | Purpose | Run by / where | Inputs (args / env) | Outputs / side effects | Status |
 |------|---------|----------------|---------------------|------------------------|--------|
 | `agent-engine/main.py` | FastAPI app: `GET /health`, `POST /webhook/ticket` (placeholder) | `uvicorn main:app` :8000 | See CONFIGURATION.md | Logs the event | Skeleton (blocked, see FEATURES F-05) |
+| `pipelines/pricetracker/ai-dev.yml` | GitHub Actions workflow: Claude implements an `ai-dev` issue on a branch and offers a PR | Runner on barcelona, on issue label / `@claude` comment by redjhawk | `ANTHROPIC_API_KEY` secret | Branch `ai-dev/...`, issue comments | Done (to be copied into pricetracker) |
 | `pipelines/pricetracker/ci-deploy.yml` | GitHub Actions workflow: vet, test, build, deploy to teruel | Runner on barcelona, on push to `main` | — | pricefollower updated on teruel | Done (to be copied into pricetracker) |
 | `runner/entrypoint.sh` | Gets a registration token with the PAT, registers, runs, de-registers on exit/SIGTERM; installs SSH files | Runner container `ENTRYPOINT` | `REPO_URL`, `GITHUB_PAT`, `RUNNER_NAME`, `RUNNER_LABELS` | Runner online in GitHub | Done |
 | `scripts/build-and-import.sh` | Build an image, `docker save`, `k3s ctr images import` | Operator on barcelona | `runner` or `agent-engine` | Image in k3s containerd (sudo) | Done |
