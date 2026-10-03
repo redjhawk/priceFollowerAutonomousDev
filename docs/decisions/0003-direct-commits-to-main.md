@@ -1,7 +1,7 @@
 # ADR-0003: Agent commits directly to `main`
 
 - **Date:** 2026-10-03
-- **Status:** Accepted
+- **Status:** Superseded by ADR-0009
 
 ## Context
 A PR-based flow adds review latency; for now we want a fast autonomous loop.

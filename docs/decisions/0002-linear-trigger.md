@@ -1,7 +1,7 @@
 # ADR-0002: Linear as the ticket trigger
 
 - **Date:** 2026-10-03
-- **Status:** Accepted
+- **Status:** Superseded by ADR-0009
 
 ## Context
 The agent needs a source of work and an event when a ticket should be implemented.

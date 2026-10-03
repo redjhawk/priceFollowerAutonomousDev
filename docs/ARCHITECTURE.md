@@ -4,40 +4,47 @@
 
 | # | Layer | Component | Technology | Role |
 |---|-------|-----------|------------|------|
-| 1 | Trigger / Plan | Project management | Linear | Holds backlog; fires webhooks on priority/state changes |
-| 2 | Agent engine | Orchestration & LLM | Python 3.11, FastAPI, LangGraph | Reads ticket, reasons, edits code, commits & pushes |
-| 3 | Compute | Local orchestration | k3s | Runs agent and runner pods |
-| 4 | CI/CD | Gatekeeper & compiler | GitHub Actions (self-hosted) | Builds, tests, triggers local deploy |
-| 5 | Target | Final deployment | Raspberry Pi 2 (ARMv7) | Hosts the compiled application |
+| 1 | Trigger / Plan | Tickets | GitHub Issues (label `ai-dev`) | Holds the backlog; labelling an issue starts the AI developer |
+| 2 | AI developer | `ai-dev` workflow | `anthropics/claude-code-action` + Claude | Follows pricetracker's AGENTS.md, skills and roles; opens a PR |
+| 3 | Compute | Local orchestration | k3s on barcelona | Runs the self-hosted runner pod |
+| 4 | CI/CD | `ci-deploy` workflow | GitHub Actions (self-hosted) | Vet, test, build, deploy on every push to `main` |
+| 5 | Target | Final deployment | Raspberry Pi 2 (teruel) | Runs the `pricefollower` systemd service |
+
+```
+[ GitHub issue + label ai-dev ] --> [ barcelona runner: ai-dev / Claude ] --> branch + PR
+                                                                                 │ you merge
+                                                                                 ▼
+[ teruel: pricefollower ] <-- deploy-armv6.sh <-- [ barcelona runner: ci-deploy ] <-- push to main
+```
 
 ## Principles
 
 - **Code storage:** cloud-hosted free GitHub repository.
-- **Execution boundary:** all heavy work (agent, builds, deploys) runs on the private local server.
+- **Execution boundary:** all heavy work (Claude's tool runs, builds, deploys) runs on barcelona.
 - **Orchestration:** Docker images managed by a single-node k3s cluster.
+- **Human gate:** AI changes reach `main` only through a merged PR.
 
 ## End-to-end flow
 
-1. A high-priority ticket moves to **In Progress** → PM tool sends a webhook.
-2. `agent-engine` (FastAPI) validates the webhook and filters on priority + state.
-3. Engine clones the target repo into a workspace and runs the LangGraph agent loop.
-4. Agent commits and pushes small, atomic commits directly to `main`.
-5. Push triggers a GitHub Actions workflow with `runs-on: self-hosted`.
-6. The runner pod in k3s picks up the job, runs `go vet`, `go test`, `npm run build`, then `scripts/deploy-armv6.sh teruel` (cross-compiled Go binary, installed over SSH as a systemd service).
+1. You open an issue in pricetracker and add the label `ai-dev`.
+2. The `ai-dev` workflow runs on the barcelona runner; Claude reads AGENTS.md, the skills and roles,
+   asks questions in the issue if needed, and pushes a branch `ai-dev/...` with a PR link.
+3. You review and merge the PR.
+4. The push to `main` triggers `ci-deploy`: `go vet`, `go test`, `npm run build`, then
+   `scripts/deploy-armv6.sh teruel` (cross-compiled Go binary, installed over SSH as a systemd service).
 
 ## Trust boundaries & security notes
 
-- Webhook endpoint must verify signatures (Linear `Linear-Signature` HMAC-SHA256).
-- Self-hosted runners execute repo code: use on a **private** repo only.
-- Tokens (GitHub PAT/App, runner registration, LLM API key) live in k8s Secrets, never in git.
-- Agent pushes are the only write path from the agent to GitHub; scope its token minimally.
+- pricetracker is public: both workflows refuse fork code; `ai-dev` runs only for `redjhawk`.
+- Claude's tools are an allow-list (no arbitrary shell, no push); the action pushes the branch.
+- Runner PAT and deploy key live in k8s Secrets; `ANTHROPIC_API_KEY` is a GitHub secret. None in git.
+- The `deploy` user on teruel can only run the installer as root.
 
 ## Decisions in effect
 
 | Topic | Decision | ADR |
 |-------|----------|-----|
-| Trigger | Linear webhooks | [0002](decisions/0002-linear-trigger.md) |
-| Git flow | Agent commits directly to `main`, small atomic commits | [0003](decisions/0003-direct-commits-to-main.md) |
+| Trigger & git flow | GitHub Issues + claude-code-action; changes land through PRs (supersedes 0002, 0003) | [0009](decisions/0009-github-issues-claude-action.md) |
 | LLM | Claude (Anthropic API) | [0004](decisions/0004-claude-llm.md) |
 | Deploy target | Raspberry Pi 2 (ARMv7, 1 GB RAM) | [0005](decisions/0005-raspberry-pi-2-target.md) |
 | Base images | Debian (`bookworm-slim`) | [0006](decisions/0006-debian-base-images.md) |
@@ -48,6 +55,6 @@
 
 | Host | Role |
 |------|------|
-| barcelona | Factory server (Debian, x86): Docker, k3s, runner, agent engine, `/srv/factory` storage |
+| barcelona | Factory server (Debian, x86): Docker, k3s, GitHub Actions runner, `/srv/factory` storage |
 | teruel | Raspberry Pi 2 target: `pricefollower` systemd service on port 3001, data in `/var/lib/pricefollower` |
 | GitHub | `redjhawk/pricetracker` (public): source code, dev-agent roles in `.agents/roles/`, workflow |
