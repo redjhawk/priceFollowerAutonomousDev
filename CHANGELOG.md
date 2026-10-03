@@ -17,6 +17,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Dates are ISO (YYYY-MM-
 
 - 2026-10-03 — Step-by-step setup guide `docs/SETUP.md`.
 
+### Fixed
+- 2026-10-03 — `setup-teruel.sh` reads the root-only deploy public key through sudo.
+
 ### Changed
 - 2026-10-03 — ADR-0005: deploy a cross-compiled Go binary as a systemd service on teruel (no Docker on the Pi).
 - 2026-10-03 — Removed `k3s/secrets.example.yaml` in favour of `scripts/create-secrets.sh`.

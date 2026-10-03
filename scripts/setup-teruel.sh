@@ -8,8 +8,9 @@ ADMIN_TARGET="${1:?Usage: $0 <admin-user>@teruel}"
 KEY_FILE=/srv/factory/ssh/id_ed25519.pub
 DEPLOY_USER=deploy
 
-if [ ! -r "$KEY_FILE" ]; then
-  echo "Error: $KEY_FILE not found; run scripts/install-barcelona.sh first." >&2
+# /srv/factory/ssh is root-only, so read the public key through sudo
+if ! PUBLIC_KEY="$(sudo cat "$KEY_FILE")"; then
+  echo "Error: cannot read $KEY_FILE; run scripts/install-barcelona.sh first." >&2
   exit 1
 fi
 
@@ -19,7 +20,7 @@ set -euo pipefail
 apt-get update && apt-get install -y rsync
 id $DEPLOY_USER >/dev/null 2>&1 || useradd -m -s /bin/bash $DEPLOY_USER
 install -d -m 700 -o $DEPLOY_USER -g $DEPLOY_USER /home/$DEPLOY_USER/.ssh
-echo '$(cat "$KEY_FILE")' > /home/$DEPLOY_USER/.ssh/authorized_keys
+echo '$PUBLIC_KEY' > /home/$DEPLOY_USER/.ssh/authorized_keys
 chown $DEPLOY_USER:$DEPLOY_USER /home/$DEPLOY_USER/.ssh/authorized_keys
 chmod 600 /home/$DEPLOY_USER/.ssh/authorized_keys
 # deploy-armv6.sh runs exactly: sudo bash ./install-pricefollower.sh ./pricefollower

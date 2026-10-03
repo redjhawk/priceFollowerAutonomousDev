@@ -72,7 +72,8 @@ To run `docker` without `sudo`, add yourself to the docker group and log in agai
 scripts/setup-teruel.sh <admin-user>@teruel
 ```
 
-You will be asked for the admin's SSH password and/or sudo password on teruel. The script:
+You will be asked for your sudo password on barcelona (the deploy key is root-only), then the
+admin's SSH and/or sudo password on teruel. The script:
 - installs `rsync` on teruel;
 - creates a `deploy` user that logs in only with the barcelona deploy key;
 - allows `deploy` to run exactly one command as root, without a password:
