@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     jq \
     openssh-client \
     rsync \
+    unzip \
     sudo \
     build-essential \
     && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
