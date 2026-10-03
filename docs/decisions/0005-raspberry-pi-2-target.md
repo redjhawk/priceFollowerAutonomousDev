@@ -7,11 +7,12 @@
 The final app runs on a Raspberry Pi 2 (ARMv7 32-bit, 900 MHz quad-core, 1 GB RAM).
 
 ## Decision
-The self-hosted runner (on the x86 server) builds for `linux/arm/v7` (Docker buildx + QEMU or
-native cross-compile) and deploys to the Pi over SSH. The Pi does not run k3s; it runs the app as
-a systemd service or a single Docker container.
+The self-hosted runner on barcelona (x86) runs pricetracker's own `scripts/deploy-armv6.sh teruel`:
+it cross-compiles one Go binary (`GOARM=6`, frontend embedded, runs on the Pi 2's ARMv7) and installs
+it over SSH as the `pricefollower` systemd service. The Pi runs neither Docker nor k3s.
 
 ## Consequences
-- Dependencies must have ARMv7 (armhf) builds; many modern images are arm64-only.
-- Tight memory budget: avoid heavy runtimes and multi-container stacks.
-- Needs `PI_HOST`, `PI_USER`, `PI_SSH_KEY` secrets on the runner.
+- No ARM container images needed; the runner only needs Go, Node 22, ssh and rsync.
+- Data stays on the Pi in `/var/lib/pricefollower` (SQLite) across deploys.
+- Unattended deploys need a `deploy` user on teruel with passwordless sudo restricted to the
+  installer command (`scripts/setup-teruel.sh`).
