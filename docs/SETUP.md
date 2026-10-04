@@ -223,8 +223,7 @@ data (`/var/lib/pricefollower/pricefollower.sqlite` on teruel) is kept across de
    in the issue and stops. Reply with a comment that starts with `@claude` and contains your answer.
 5. **Review the PR:** when Claude has committed, the workflow opens a pull request from its branch
    `ai-dev/...` that closes the issue (link in the run summary and in the PR list). Review the
-   changes; ask for fixes with `@claude` comments **in the PR**. There is only one PR per issue: once
-   it exists, `@claude` on the issue just replies with a link to the PR.
+   changes; you can ask for fixes with `@claude` comments in the PR.
 6. **Merge** the PR. `ci-deploy` starts on its own and deploys to teruel (step 9).
 
 Notes:

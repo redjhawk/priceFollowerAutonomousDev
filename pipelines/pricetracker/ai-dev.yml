@@ -38,36 +38,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      # One PR per issue: the action starts a new timestamped branch on every issue-triggered run,
-      # so once an ai-dev PR exists for the issue, follow-ups must happen in that PR (where the
-      # action checks out the PR branch and Claude's commits land in the same PR).
-      - name: Redirect to the existing pull request
-        id: guard
-        if: ${{ github.event.issue && !github.event.issue.pull_request }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-        run: |
-          api() { curl -fsSL -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "$@"; }
-          repo_api="https://api.github.com/repos/${GITHUB_REPOSITORY}"
-          pr=$(api "$repo_api/pulls?state=open&per_page=100" \
-                 | jq -r --arg prefix "ai-dev #$ISSUE_NUMBER:" '[.[] | select(.title | startswith($prefix))][0].number // empty')
-          if [ -n "$pr" ]; then
-            echo "pr=$pr" >> "$GITHUB_OUTPUT"
-            jq -n --arg body "There is already a pull request for this issue: #$pr. Please continue there with an \`@claude\` comment, so all changes stay in one PR." '{body: $body}' \
-              | api -X POST "$repo_api/issues/$ISSUE_NUMBER/comments" -d @- >/dev/null
-            echo "Existing PR #$pr for issue #$ISSUE_NUMBER; Claude not started."
-          fi
-
       - name: Install dependencies
-        if: steps.guard.outputs.pr == ''
         run: |
           npm ci
           go mod download
 
       # The Claude token lives on barcelona (k8s Secret -> runner pod env), not in GitHub
       - name: Load Claude token from barcelona
-        if: steps.guard.outputs.pr == ''
         run: |
           if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
             echo "::error::CLAUDE_CODE_OAUTH_TOKEN is not set on the runner; run scripts/create-secrets.sh on barcelona"
@@ -78,7 +55,6 @@ jobs:
 
       - uses: anthropics/claude-code-action@v1
         id: claude
-        if: steps.guard.outputs.pr == ''
         with:
           # Subscription token from `claude setup-token`: runs use Claude Pro/Max, not the API
           claude_code_oauth_token: ${{ env.CLAUDE_TOKEN }}
@@ -92,11 +68,11 @@ jobs:
             --allowedTools "Read,Edit,Write,Glob,Grep,Task,TodoWrite,Bash(go build:*),Bash(go test:*),Bash(go vet:*),Bash(gofmt:*),Bash(npm ci),Bash(npm run build),Bash(npm run dev:*),Bash(npm run test:*),Bash(npx tsc:*),Bash(npx playwright test:*),Bash(go run:*),Bash(curl -s http://localhost:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git rev-parse:*),Bash(git branch --show-current),Bash(git add:*),Bash(git commit:*),Bash(git push origin HEAD),Bash(git push -u origin HEAD)"
             --append-system-prompt "Before any work, read AGENTS.md and follow it fully: read the four project skills it lists (.agents/skills/ and project-skills/) and run the staged workflow in doc/workflow/WORKFLOW.md, using a separate Task subagent for each role in .agents/roles/. The issue is the user's development request. When a product decision, API contract approval or refactoring decision is needed, ask it in the issue and stop; the user answers with an @claude comment. You are already on this issue's branch: never create or switch branches. Use small Conventional Commits that end with 'Refs: #<issue number>', and publish them with exactly `git push origin HEAD`. Do not open the pull request yourself: the workflow opens it after you finish. For QA, start the app with npm run dev in the background and test it with Playwright (Chromium is installed); stop it when done."
 
-      # Open the single PR for this issue once Claude has commits. Skipped for comments on PRs (the PR
-      # already exists) and when Claude made no commits (e.g. it stopped to ask a question). The title
-      # prefix "ai-dev #<issue>:" is what the guard step above looks for.
+      # Open (or reuse) the PR for Claude's branch, so a finished issue ends as a PR ready to review.
+      # Skipped for comments on PRs (the PR already exists) and when Claude made no commits
+      # (e.g. it stopped to ask a question).
       - name: Open pull request
-        if: steps.claude.outputs.branch_name != '' && github.event.issue && !github.event.issue.pull_request
+        if: steps.claude.outputs.branch_name != '' && !github.event.issue.pull_request
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: ${{ steps.claude.outputs.branch_name }}
@@ -113,10 +89,9 @@ jobs:
             exit 0
           fi
 
-          existing=$(api "$repo_api/pulls?state=open&per_page=100" \
-                       | jq -r --arg prefix "ai-dev #$ISSUE_NUMBER:" '[.[] | select(.title | startswith($prefix))][0].html_url // empty')
+          existing=$(api "$repo_api/pulls?state=open&head=${GITHUB_REPOSITORY_OWNER}:$BRANCH" | jq -r '.[0].html_url // empty')
           if [ -n "$existing" ]; then
-            echo "A PR for issue #$ISSUE_NUMBER is already open: $existing; not opening another."
+            echo "PR already open: $existing"
             exit 0
           fi
 
