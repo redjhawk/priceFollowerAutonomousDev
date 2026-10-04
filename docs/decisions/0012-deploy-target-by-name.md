@@ -1,7 +1,7 @@
 # ADR-0012: Deploy target set in k3s and resolved by name through the host network
 
 - **Date:** 2026-10-04
-- **Status:** Accepted
+- **Status:** Accepted — name resolution via host network superseded by ADR-0013
 
 ## Context
 The deploy target was hard-coded (`teruel` in `ci-deploy.yml`), and because pods use the cluster DNS

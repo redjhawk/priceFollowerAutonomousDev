@@ -91,10 +91,12 @@ spec:
       terminationGracePeriodSeconds: 60
       securityContext:
         fsGroup: 1000  # lets the runner user read mounted Secret files
-      # Use barcelona's network and resolver (incl. /etc/hosts) so the target device is found by
-      # name, exactly as from barcelona itself; no IP needed (ADR-0012)
-      hostNetwork: true
-      dnsPolicy: Default
+      # Target device name -> IP, written into the pod's /etc/hosts at creation (ADR-0013).
+      # Set your device's LAN IP here; keep the hostname equal to DEPLOY_HOST below.
+      hostAliases:
+      - ip: "TERUEL_IP"
+        hostnames:
+        - "teruel"
       containers:
       - name: runner
         image: local-gh-runner-deploy:latest
@@ -111,7 +113,7 @@ spec:
             secretKeyRef:
               name: factory-secrets
               key: runner-pat
-        # Target device for ci-deploy, resolved by name (ADR-0012)
+        # Target device for ci-deploy; resolved through hostAliases above (ADR-0013)
         - name: DEPLOY_HOST
           value: "teruel"
         - name: DEPLOY_USER
