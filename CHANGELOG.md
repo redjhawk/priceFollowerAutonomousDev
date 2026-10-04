@@ -26,6 +26,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Dates are ISO (YYYY-MM-
 - 2026-10-04 — Claude token kept on barcelona in `factory-secrets` instead of a GitHub secret (ADR-0010).
 - 2026-10-04 — Runner image bundles Playwright Chromium; Claude runs interface QA on barcelona.
 - 2026-10-04 — `ai-dev` uses Claude Opus 5.5 with low effort (was Sonnet 5.5).
+- 2026-10-04 — Separate runners: `barcelona-dev` (ai-dev, Claude token) and `barcelona-deploy`
+  (ci-deploy, deploy key), built from one Dockerfile with two targets (ADR-0011).
+- 2026-10-04 — Deploy target set by `DEPLOY_HOST`/`DEPLOY_USER` in k3s and resolved by name;
+  `create-secrets.sh` no longer asks for the device IP (ADR-0012).
 
 ### Removed
 - 2026-10-03 — Agent engine skeleton (FastAPI/LangGraph) and its k3s Deployment; Linear trigger and

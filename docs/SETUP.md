@@ -22,12 +22,15 @@ binary to teruel and restarts the service.
 - Debian 12 or newer, x86-64, with internet access.
 - An account with `sudo`.
 - At least 4 GB RAM and 20 GB free disk (images, Go and npm caches).
-- Can reach teruel over SSH on the LAN.
+- Can reach teruel over SSH on the LAN **by name**: `getent hosts teruel` must print its address.
+  If it doesn't, add teruel to your router's DNS or to barcelona's `/etc/hosts`
+  (`<ip> teruel`). Names that only work through mDNS (`teruel.local`) are not enough (ADR-0012).
 
 **teruel**
 - Raspberry Pi OS (or another Debian-based OS) with `systemd`, `sudo` and an SSH server enabled.
 - An admin account that can `sudo` (used once, in step 4).
-- A fixed IP address (DHCP reservation in your router is enough).
+- A stable name on the LAN (see barcelona above). A fixed IP is only needed if barcelona resolves
+  it through `/etc/hosts`.
 
 **GitHub and Anthropic**
 - Admin access to `redjhawk/pricetracker`.
@@ -52,7 +55,7 @@ sudo scripts/install-barcelona.sh
 This script:
 - installs `docker.io`, `git`, `jq`, `rsync`, `openssh-client` and `curl`;
 - installs k3s, with a kubeconfig readable by your user;
-- creates the persistent storage under `/srv/factory` (runner work dir, Go and npm caches, SSH
+- creates the persistent storage under `/srv/factory` (per-runner work dirs, Go and npm caches, SSH
   folder), owned by uid 1000, the user inside the containers;
 - generates the deploy key `/srv/factory/ssh/id_ed25519`.
 
@@ -61,7 +64,7 @@ Check it:
 ```bash
 kubectl get nodes          # barcelona  Ready
 sudo docker info >/dev/null && echo docker ok
-ls /srv/factory            # runner  ssh
+ls /srv/factory            # runner-deploy  runner-dev  ssh
 ```
 
 To run `docker` without `sudo`, add yourself to the docker group and log in again:
@@ -104,8 +107,6 @@ scripts/create-secrets.sh
 ```
 
 It asks for:
-- **teruel's IP address.** Pods cannot resolve LAN host names, so the runner's SSH config
-  maps the name `teruel` to this IP.
 - **The GitHub token** from step 5 (input is hidden).
 - **Your Claude token** for the AI developer: on a machine where `claude` is logged in, run
   `claude setup-token`, log in in the browser and paste the printed token (input is hidden). Leave it
@@ -113,28 +114,44 @@ It asks for:
 
 It creates two Secrets; nothing is written to the repository or to GitHub:
 - `factory-secrets` holds the GitHub token and the Claude token;
-- `factory-ssh` holds the deploy key, `known_hosts` and the SSH config.
+- `factory-ssh` holds the deploy key and `known_hosts`, and is only given to the deploy runner.
+
+No IP is needed: the deploy runner finds teruel by name, like barcelona does.
 
 Check it: `kubectl get secrets` lists `factory-secrets` and `factory-ssh`.
 
-## 7. Build the runner image and deploy it
+## 7. Build the runner images and deploy them
+
+There are two runners, each with only what it needs (ADR-0011):
+
+| Runner | Runs | Has |
+|--------|------|-----|
+| `barcelona-dev` | `ai-dev` (Claude develops and tests) | Go, Node, Chromium, Claude token |
+| `barcelona-deploy` | `ci-deploy` (test, build, deploy) | Go, Node, ssh, rsync, deploy key |
 
 ```bash
-scripts/build-and-import.sh runner
+scripts/build-and-import.sh all
 scripts/deploy.sh
-kubectl get pods -w        # wait for github-runner-... Running, then Ctrl+C
+kubectl get pods -w        # wait for runner-dev-... and runner-deploy-... Running, then Ctrl+C
 ```
 
-The build downloads Node 22, Go and the latest GitHub Actions runner, so the first build takes a
-few minutes.
+The build downloads Node 22, Go, Chromium and the latest GitHub Actions runner, so the first build
+takes several minutes.
+
+The device to deploy to is set in `k3s/cluster-manifests.yaml`, Deployment `runner-deploy`:
+`DEPLOY_HOST` (default `teruel`) and `DEPLOY_USER` (default `deploy`). After changing them, run
+`scripts/deploy.sh runner-deploy`.
 
 Check it:
 
 ```bash
-kubectl logs -l app=github-runner --tail=20     # "Listening for Jobs"
+kubectl logs -l app=runner-dev --tail=20       # "Listening for Jobs"
+kubectl logs -l app=runner-deploy --tail=20    # "Listening for Jobs"
+kubectl exec deploy/runner-deploy -- getent hosts teruel   # prints teruel's address
 ```
 
-GitHub → pricetracker → **Settings › Actions › Runners**: runner `barcelona` is **Idle**.
+GitHub → pricetracker → **Settings › Actions › Runners**: `barcelona-dev` and `barcelona-deploy` are
+**Idle**.
 
 ## 8. Install the workflows in pricetracker
 
@@ -160,8 +177,8 @@ The push in step 8 already starts a `ci-deploy` run. You can also start one by h
 pricetracker → **Actions › ci-deploy › Run workflow**.
 
 1. Follow the run in the **Actions** tab; all steps should turn green, ending with
-   *Deployment complete: pricefollower is active on teruel*.
-2. Open `http://<teruel-ip>:3001` in a browser.
+   *Deployment complete: pricefollower is active on deploy@teruel*.
+2. Open `http://teruel:3001` in a browser.
 3. On teruel, if needed: `systemctl status pricefollower` and `sudo journalctl -u pricefollower -f`.
 
 From now on, every push to `main` of pricetracker is tested and deployed automatically. The app's
@@ -173,8 +190,8 @@ data (`/var/lib/pricefollower/pricefollower.sqlite` on teruel) is kept across de
    *Install* → *Only select repositories* → `pricetracker`. It gives the workflow the GitHub token it
    uses to comment and push branches.
 2. **Check your Claude token is on barcelona:** it was entered in step 6 and never goes to GitHub.
-   If you skipped it, run `scripts/create-secrets.sh` again, then `scripts/deploy.sh github-runner`.
-   Check: `kubectl exec deploy/github-runner -- printenv CLAUDE_CODE_OAUTH_TOKEN | wc -c` prints
+   If you skipped it, run `scripts/create-secrets.sh` again, then `scripts/deploy.sh runner-dev`.
+   Check: `kubectl exec deploy/runner-dev -- printenv CLAUDE_CODE_OAUTH_TOKEN | wc -c` prints
    more than 1.
 3. **Create the label:** pricetracker → **Issues › Labels › New label** → name `ai-dev`.
 
@@ -194,7 +211,7 @@ data (`/var/lib/pricefollower/pricefollower.sqlite` on teruel) is kept across de
 6. **Merge** the PR. `ci-deploy` starts on its own and deploys to teruel (step 9).
 
 Notes:
-- One runner does everything: while Claude works, deployments wait in the queue.
+- Claude works on `barcelona-dev`; deployments run in parallel on `barcelona-deploy`.
 - Claude runs the QA role's Playwright tests on barcelona against `npm run dev`.
 - Runs count against your Claude subscription limits, shared with your own Claude use; the model
   and turn limit are set in `ai-dev.yml`.
@@ -204,13 +221,15 @@ Notes:
 
 | Task | Command |
 |------|---------|
-| Runner logs | `kubectl logs -l app=github-runner -f` |
+| Runner logs | `kubectl logs -l app=runner-dev -f` / `kubectl logs -l app=runner-deploy -f` |
 | See what Claude did | pricetracker → **Actions › ai-dev** → the run's log, or the issue comments |
-| Restart the runner | `scripts/deploy.sh github-runner` |
-| Rebuild the runner image (e.g. new Go version) | `scripts/build-and-import.sh runner && scripts/deploy.sh github-runner` |
-| Renew the Claude token | `claude setup-token` → `scripts/create-secrets.sh` → `scripts/deploy.sh github-runner` |
-| Renew the GitHub token | New token (step 5) → `scripts/create-secrets.sh` → `scripts/deploy.sh github-runner` |
-| teruel IP or OS changed | `scripts/setup-teruel.sh …` → `scripts/create-secrets.sh` → `scripts/deploy.sh github-runner` |
+| Restart a runner | `scripts/deploy.sh runner-dev` or `scripts/deploy.sh runner-deploy` |
+| Rebuild the images (e.g. new Go version) | `scripts/build-and-import.sh all && scripts/deploy.sh runner-dev && scripts/deploy.sh runner-deploy` |
+| Renew the Claude token | `claude setup-token` → `scripts/create-secrets.sh` → `scripts/deploy.sh runner-dev` |
+| Renew the GitHub token | New token (step 5) → `scripts/create-secrets.sh` → restart both runners |
+| teruel reinstalled (new host key) | `scripts/setup-teruel.sh <admin>@teruel` → `scripts/create-secrets.sh` → `scripts/deploy.sh runner-deploy` |
+| Deploy to another device | Set `DEPLOY_HOST` in `k3s/cluster-manifests.yaml` → `scripts/setup-teruel.sh <admin>@<name>` → `scripts/create-secrets.sh` → `scripts/deploy.sh runner-deploy` |
+| teruel's IP changed | Nothing, if it is resolved by DNS; otherwise update barcelona's `/etc/hosts` |
 | Back up the factory | Copy `/srv/factory` (the Secrets can be recreated with step 6) |
 
 When something fails, see [runbooks/troubleshooting.md](runbooks/troubleshooting.md).

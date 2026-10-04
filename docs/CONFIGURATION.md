@@ -7,6 +7,8 @@
 | `REPO_URL` | runner | yes | Deployment env | `https://github.com/redjhawk/pricetracker` |
 | `GITHUB_PAT` | runner | yes | Secret `runner-pat` | Fine-grained PAT (Administration r/w) used to get registration/removal tokens |
 | `CLAUDE_CODE_OAUTH_TOKEN` | runner-dev only | for ai-dev | Secret `claude-oauth-token` | Claude subscription token from `claude setup-token` (ADR-0010) |
+| `DEPLOY_HOST` | runner-deploy | yes | Deployment env | Target device name, resolved via barcelona's resolver (default `teruel`, ADR-0012) |
+| `DEPLOY_USER` | runner-deploy | yes | Deployment env | SSH user on the target (default `deploy`) |
 | `RUNNER_NAME` / `RUNNER_LABELS` | runner | yes | Deployment env | `barcelona-dev` / `barcelona-deploy`; workflows target `runs-on: [self-hosted, <label>]` |
 
 ## Kubernetes Secrets
@@ -16,7 +18,7 @@ Created by `scripts/create-secrets.sh` (interactive, nothing stored in git).
 | Secret | Keys | Consumed by |
 |--------|------|-------------|
 | `factory-secrets` | `runner-pat` (both runners), `claude-oauth-token` (optional, runner-dev only) | referenced per key |
-| `factory-ssh` | `id_ed25519`, `known_hosts`, `config` (maps `teruel` → IP, user `deploy`) | runner-deploy only, mounted at `/etc/factory-ssh` |
+| `factory-ssh` | `id_ed25519`, `known_hosts` (keyed by device name) | runner-deploy only, mounted at `/etc/factory-ssh` |
 
 ## Images
 

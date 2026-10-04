@@ -22,7 +22,7 @@ scripts/create-secrets.sh
 
 ## 4. Build, import, deploy
 ```bash
-scripts/build-and-import.sh runner
+scripts/build-and-import.sh all     # runner-dev and runner-deploy images
 scripts/deploy.sh
 kubectl get pods -w
 ```
@@ -35,12 +35,13 @@ In GitHub: *Settings › Actions › General › Fork pull request workflows* �
 outside contributors (repo is public, ADR-0008).
 
 ## 6. Verify
-- GitHub → pricetracker → *Settings › Actions › Runners*: `barcelona` is **Idle**.
+- GitHub → pricetracker → *Settings › Actions › Runners*: `barcelona-dev` and `barcelona-deploy` are **Idle**.
 - Run the workflow manually (*Actions › ci-deploy › Run workflow*); then on teruel:
   `systemctl status pricefollower` and open `http://teruel:3001`.
 
 ## Logs
 ```bash
-kubectl logs -l app=github-runner -f
+kubectl logs -l app=runner-dev -f
+kubectl logs -l app=runner-deploy -f
 ssh deploy@teruel journalctl -u pricefollower -f   # may need sudo depending on groups
 ```

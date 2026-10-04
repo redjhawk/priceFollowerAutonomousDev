@@ -15,7 +15,7 @@ staged role workflow in `doc/workflow/WORKFLOW.md` with `.agents/roles/`.
 | Comment on an issue or PR | Contains `@claude` (answers to Claude's questions, review requests) |
 
 Only `redjhawk` can trigger it (`github.actor` check); the action also refuses users without
-write access. The job runs on the self-hosted runner `barcelona`.
+write access. The job runs on the dev runner `barcelona-dev`, which has no deploy key.
 
 ## What Claude may do
 `--allowedTools`: read/edit/write files, search, Task subagents (one per role), `go build|test|vet`,
@@ -37,4 +37,3 @@ the action itself on a branch `ai-dev/...`; it never pushes to `main`.
 - Model `claude-opus-5-5` with effort `low`, max 200 turns, 120 min timeout (in the workflow file).
 
 ## Known limitations
-- One runner: while Claude works, `ci-deploy` runs wait in the queue.
