@@ -20,8 +20,9 @@ write access. The job runs on the dev runner `barcelona-dev`, which has no deplo
 ## What Claude may do
 `--allowedTools`: read/edit/write files, search, Task subagents (one per role), `go build|test|vet`,
 `gofmt`, `go run`, `npm ci`, `npm run build|dev|test:*`, `npx tsc`, `npx playwright test`,
-`curl` to localhost, read-only git. Commits and the branch push are done by
-the action itself on a branch `ai-dev/...`; it never pushes to `main`.
+`curl` to localhost, read-only git, `git add`, `git commit`, and `git push origin HEAD`. The action checks out
+the branch `ai-dev/...` before Claude starts; Claude cannot create or switch branches, so it can only
+push that branch, never `main`. The workflow, not Claude, opens the PR.
 
 ## Flow
 1. Issue labelled `ai-dev` → Claude posts a progress comment.

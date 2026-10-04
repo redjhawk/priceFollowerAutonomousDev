@@ -15,6 +15,7 @@
 | ai-dev fails with an authentication error | Claude GitHub App not installed or Claude token revoked | SETUP.md step 10 |
 | ai-dev fails at "Load Claude token from barcelona" | Token not in `factory-secrets` | `claude setup-token` → `scripts/create-secrets.sh` → `scripts/deploy.sh runner-dev` |
 | ai-dev stops with a usage-limit message | Claude subscription limit reached | Wait for the limit to reset, then comment `@claude continue` |
+| Claude says it cannot commit, push or open PRs | Old `ai-dev.yml` without git write tools | Copy the current `pipelines/pricetracker/ai-dev.yml` into pricetracker; the PR is opened by the workflow, not by Claude |
 | Claude says a command is not allowed | Not in `--allowedTools` of `ai-dev.yml` | Add it to the allow-list in this repo, copy the workflow to pricetracker again |
 | ci-deploy: "Cannot resolve teruel from barcelona" | `hostAliases` hostname differs from `DEPLOY_HOST`, or pod not restarted | Fix `k3s/cluster-manifests.yaml` → `scripts/deploy.sh runner-deploy`; check `kubectl exec deploy/runner-deploy -- getent hosts teruel` |
 | ci-deploy: SSH timeout to teruel | Wrong or changed IP in `hostAliases` | Update it → `scripts/deploy.sh runner-deploy` |
