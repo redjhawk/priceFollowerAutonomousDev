@@ -174,7 +174,7 @@ cp pipelines/pricetracker/ci-deploy.yml pipelines/pricetracker/ai-dev.yml ~/pric
 cd ~/pricetracker
 git add .github/workflows/ci-deploy.yml .github/workflows/ai-dev.yml
 git commit -m "ci: add AI developer and deploy-to-teruel workflows"
-git push origin main
+git push origin master
 ```
 
 **Protect barcelona** (pricetracker is public): GitHub → pricetracker → **Settings › Actions › General**
@@ -191,7 +191,7 @@ pricetracker → **Actions › ci-deploy › Run workflow**.
 2. Open `http://teruel:3001` in a browser.
 3. On teruel, if needed: `systemctl status pricefollower` and `sudo journalctl -u pricefollower -f`.
 
-From now on, every push to `main` of pricetracker is tested and deployed automatically. The app's
+From now on, every push to `master` (the default branch) of pricetracker is tested and deployed automatically. The app's
 data (`/var/lib/pricefollower/pricefollower.sqlite` on teruel) is kept across deployments.
 
 ## 10. Enable the AI developer

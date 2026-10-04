@@ -6,7 +6,7 @@ You open a GitHub issue with the label `ai-dev`; Claude implements it on the sel
 the same runner tests, builds and deploys the app to the Raspberry Pi **teruel**.
 
 ```
-[ issue + label ai-dev ] --> [ barcelona: ai-dev (Claude) ] --> PR --you merge--> main
+[ issue + label ai-dev ] --> [ barcelona: ai-dev (Claude) ] --> PR --you merge--> master
                                                                                    │
 [ teruel: pricefollower ] <------ deploy ------ [ barcelona: ci-deploy ] <---------┘
 ```

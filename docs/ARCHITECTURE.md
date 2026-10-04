@@ -7,14 +7,14 @@
 | 1 | Trigger / Plan | Tickets | GitHub Issues (label `ai-dev`) | Holds the backlog; labelling an issue starts the AI developer |
 | 2 | AI developer | `ai-dev` workflow | `anthropics/claude-code-action` + Claude | Follows pricetracker's AGENTS.md, skills and roles; opens a PR |
 | 3 | Compute | Local orchestration | k3s on barcelona | Runs the dev and deploy runner pods |
-| 4 | CI/CD | `ci-deploy` workflow | GitHub Actions (self-hosted) | Vet, test, build, deploy on every push to `main` |
+| 4 | CI/CD | `ci-deploy` workflow | GitHub Actions (self-hosted) | Vet, test, build, deploy on every push to `master` |
 | 5 | Target | Final deployment | Raspberry Pi 2 (teruel) | Runs the `pricefollower` systemd service |
 
 ```
 [ GitHub issue + label ai-dev ] --> [ barcelona runner: ai-dev / Claude ] --> branch + PR
                                                                                  │ you merge
                                                                                  ▼
-[ teruel: pricefollower ] <-- deploy-armv6.sh <-- [ barcelona runner: ci-deploy ] <-- push to main
+[ teruel: pricefollower ] <-- deploy-armv6.sh <-- [ barcelona runner: ci-deploy ] <-- push to master
 ```
 
 ## Principles
@@ -22,7 +22,7 @@
 - **Code storage:** cloud-hosted free GitHub repository.
 - **Execution boundary:** all heavy work (Claude's tool runs, builds, deploys) runs on barcelona.
 - **Orchestration:** Docker images managed by a single-node k3s cluster.
-- **Human gate:** AI changes reach `main` only through a merged PR.
+- **Human gate:** AI changes reach `master` (the default branch) only through a merged PR.
 
 ## End-to-end flow
 
@@ -30,7 +30,7 @@
 2. The `ai-dev` workflow runs on the `barcelona-dev` runner; Claude reads AGENTS.md, the skills and roles,
    asks questions in the issue if needed, and pushes a branch `ai-dev/...` with a PR link.
 3. You review and merge the PR.
-4. The push to `main` triggers `ci-deploy` on the `barcelona-deploy` runner: `go vet`, `go test`, `npm run build`, then
+4. The push to `master` triggers `ci-deploy` on the `barcelona-deploy` runner: `go vet`, `go test`, `npm run build`, then
    `scripts/deploy-armv6.sh $DEPLOY_USER@$DEPLOY_HOST` (cross-compiled Go binary, installed over SSH as a systemd service).
 
 ## Trust boundaries & security notes

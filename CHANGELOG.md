@@ -42,6 +42,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Dates are ISO (YYYY-MM-
   direct commits to `main` superseded by ADR-0009.
 
 ### Fixed
+- 2026-10-04 — `ci-deploy` also listens to `master`, pricetracker's real default branch; merged PRs
+  were never deployed.
+- 2026-10-04 — `ai-dev` installs `gh` when the runner image lacks it and passes `GH_TOKEN` to Claude's
+  commands through Claude Code settings, so Claude can open PRs.
 - 2026-10-04 — `runner-deploy` could not resolve teruel by name; its IP is now set in the pod's
   `hostAliases` in the k3s manifest (ADR-0013).
 - 2026-10-03 — Runner image installs `unzip`, required by claude-code-action.
