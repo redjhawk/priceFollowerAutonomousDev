@@ -15,6 +15,6 @@ Status: `Planned` → `In progress` → `Done` (→ `Deprecated`).
 | F-13 | Persistent host storage | k3s | `/srv/factory` hostPath | Done (runner) | ADR-0007 |
 | F-14 | Runner self-registration via PAT | runner | `runner/entrypoint.sh` | Done | ADR-0008 |
 | F-15 | GitHub issue (label `ai-dev`) → Claude implements it following AGENTS.md, skills and roles → PR | ai-dev | `pipelines/pricetracker/ai-dev.yml` | Done | ADR-0009; copy into pricetracker |
-| F-17 | Deploy target set in k3s (`DEPLOY_HOST`), resolved by name, no IP | k3s, CI | `k3s/cluster-manifests.yaml`, `ci-deploy.yml` | Done | ADR-0012 |
+| F-17 | Deploy target set in k3s (`DEPLOY_HOST` + IP in `hostAliases`), no IP in secrets | k3s, CI | `k3s/cluster-manifests.yaml`, `ci-deploy.yml` | Done | ADR-0012, ADR-0013 |
 | F-16 | Linear integration | — | — | Planned | See ROADMAP.md |
 | F-03, F-04, F-05, F-10 | Linear webhook agent engine | agent-engine | — | Deprecated | Replaced by F-15 (ADR-0009) |

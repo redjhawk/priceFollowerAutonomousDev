@@ -22,15 +22,12 @@ binary to teruel and restarts the service.
 - Debian 12 or newer, x86-64, with internet access.
 - An account with `sudo`.
 - At least 4 GB RAM and 20 GB free disk (images, Go and npm caches).
-- Can reach teruel over SSH on the LAN **by name**: `getent hosts teruel` must print its address.
-  If it doesn't, add teruel to your router's DNS or to barcelona's `/etc/hosts`
-  (`<ip> teruel`). Names that only work through mDNS (`teruel.local`) are not enough (ADR-0012).
+- Can reach teruel over SSH on the LAN.
 
 **teruel**
 - Raspberry Pi OS (or another Debian-based OS) with `systemd`, `sudo` and an SSH server enabled.
 - An admin account that can `sudo` (used once, in step 4).
-- A stable name on the LAN (see barcelona above). A fixed IP is only needed if barcelona resolves
-  it through `/etc/hosts`.
+- A fixed IP address (DHCP reservation in your router is enough). You enter it in step 7.
 
 **GitHub and Anthropic**
 - Admin access to `redjhawk/pricetracker`.
@@ -116,7 +113,7 @@ It creates two Secrets; nothing is written to the repository or to GitHub:
 - `factory-secrets` holds the GitHub token and the Claude token;
 - `factory-ssh` holds the deploy key and `known_hosts`, and is only given to the deploy runner.
 
-No IP is needed: the deploy runner finds teruel by name, like barcelona does.
+teruel's IP is not a secret: it goes in the k3s manifest in step 7.
 
 Check it: `kubectl get secrets` lists `factory-secrets` and `factory-ssh`.
 
@@ -129,6 +126,19 @@ There are two runners, each with only what it needs (ADR-0011):
 | `barcelona-dev` | `ai-dev` (Claude develops and tests) | Go, Node, Chromium, Claude token |
 | `barcelona-deploy` | `ci-deploy` (test, build, deploy) | Go, Node, ssh, rsync, deploy key |
 
+First, tell the deploy runner where teruel is. In `k3s/cluster-manifests.yaml`, Deployment
+`runner-deploy`, replace the placeholder with teruel's LAN IP (ADR-0013):
+
+```yaml
+      hostAliases:
+      - ip: "192.168.1.50"     # <- teruel's IP (example)
+        hostnames:
+        - "teruel"
+```
+
+Kubernetes writes this into the runner's `/etc/hosts`, so the name `teruel` works inside it.
+`scripts/deploy.sh` refuses to run while the placeholder `TERUEL_IP` is still there.
+
 ```bash
 scripts/build-and-import.sh all
 scripts/deploy.sh
@@ -138,8 +148,8 @@ kubectl get pods -w        # wait for runner-dev-... and runner-deploy-... Runni
 The build downloads Node 22, Go, Chromium and the latest GitHub Actions runner, so the first build
 takes several minutes.
 
-The device to deploy to is set in `k3s/cluster-manifests.yaml`, Deployment `runner-deploy`:
-`DEPLOY_HOST` (default `teruel`) and `DEPLOY_USER` (default `deploy`). After changing them, run
+The device to deploy to is set in the same Deployment: `DEPLOY_HOST` (default `teruel`, must match
+the `hostAliases` hostname) and `DEPLOY_USER` (default `deploy`). After changing them, run
 `scripts/deploy.sh runner-deploy`.
 
 Check it:
@@ -228,8 +238,8 @@ Notes:
 | Renew the Claude token | `claude setup-token` → `scripts/create-secrets.sh` → `scripts/deploy.sh runner-dev` |
 | Renew the GitHub token | New token (step 5) → `scripts/create-secrets.sh` → restart both runners |
 | teruel reinstalled (new host key) | `scripts/setup-teruel.sh <admin>@teruel` → `scripts/create-secrets.sh` → `scripts/deploy.sh runner-deploy` |
-| Deploy to another device | Set `DEPLOY_HOST` in `k3s/cluster-manifests.yaml` → `scripts/setup-teruel.sh <admin>@<name>` → `scripts/create-secrets.sh` → `scripts/deploy.sh runner-deploy` |
-| teruel's IP changed | Nothing, if it is resolved by DNS; otherwise update barcelona's `/etc/hosts` |
+| Deploy to another device | Set `DEPLOY_HOST` and `hostAliases` in `k3s/cluster-manifests.yaml` → `scripts/setup-teruel.sh <admin>@<name>` → `scripts/create-secrets.sh` → `scripts/deploy.sh runner-deploy` |
+| teruel's IP changed | Update `hostAliases` in `k3s/cluster-manifests.yaml` → `scripts/deploy.sh runner-deploy` |
 | Back up the factory | Copy `/srv/factory` (the Secrets can be recreated with step 6) |
 
 When something fails, see [runbooks/troubleshooting.md](runbooks/troubleshooting.md).

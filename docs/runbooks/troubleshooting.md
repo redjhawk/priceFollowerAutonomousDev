@@ -16,6 +16,8 @@
 | ai-dev fails at "Load Claude token from barcelona" | Token not in `factory-secrets` | `claude setup-token` → `scripts/create-secrets.sh` → `scripts/deploy.sh runner-dev` |
 | ai-dev stops with a usage-limit message | Claude subscription limit reached | Wait for the limit to reset, then comment `@claude continue` |
 | Claude says a command is not allowed | Not in `--allowedTools` of `ai-dev.yml` | Add it to the allow-list in this repo, copy the workflow to pricetracker again |
-| ci-deploy: "Cannot resolve teruel from barcelona" | Name not in LAN DNS or barcelona's `/etc/hosts` (mDNS-only names are not seen) | Add it to the router's DNS or `/etc/hosts`; check `kubectl exec deploy/runner-deploy -- getent hosts teruel` |
+| ci-deploy: "Cannot resolve teruel from barcelona" | `hostAliases` hostname differs from `DEPLOY_HOST`, or pod not restarted | Fix `k3s/cluster-manifests.yaml` → `scripts/deploy.sh runner-deploy`; check `kubectl exec deploy/runner-deploy -- getent hosts teruel` |
+| ci-deploy: SSH timeout to teruel | Wrong or changed IP in `hostAliases` | Update it → `scripts/deploy.sh runner-deploy` |
+| `deploy.sh`: "set the target device's IP" | Placeholder `TERUEL_IP` still in the manifest | Put teruel's IP in `hostAliases` (SETUP step 7) |
 | ci-deploy fails with "DEPLOY_HOST is not set" | Old runner-deploy pod or manifest | `scripts/deploy.sh runner-deploy` |
 | Old runner `barcelona` shown Offline in GitHub | Registration from before the split | Remove it in *Settings › Actions › Runners* |

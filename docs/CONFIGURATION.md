@@ -7,7 +7,7 @@
 | `REPO_URL` | runner | yes | Deployment env | `https://github.com/redjhawk/pricetracker` |
 | `GITHUB_PAT` | runner | yes | Secret `runner-pat` | Fine-grained PAT (Administration r/w) used to get registration/removal tokens |
 | `CLAUDE_CODE_OAUTH_TOKEN` | runner-dev only | for ai-dev | Secret `claude-oauth-token` | Claude subscription token from `claude setup-token` (ADR-0010) |
-| `DEPLOY_HOST` | runner-deploy | yes | Deployment env | Target device name, resolved via barcelona's resolver (default `teruel`, ADR-0012) |
+| `DEPLOY_HOST` | runner-deploy | yes | Deployment env | Target device name (default `teruel`); must match the `hostAliases` hostname (ADR-0012, ADR-0013) |
 | `DEPLOY_USER` | runner-deploy | yes | Deployment env | SSH user on the target (default `deploy`) |
 | `RUNNER_NAME` / `RUNNER_LABELS` | runner | yes | Deployment env | `barcelona-dev` / `barcelona-deploy`; workflows target `runs-on: [self-hosted, <label>]` |
 
@@ -40,6 +40,7 @@ See [ADR-0007](decisions/0007-host-storage.md): everything persistent is under `
 
 | Item | Value |
 |------|-------|
+| Address | LAN IP in `hostAliases` of `runner-deploy` (`k3s/cluster-manifests.yaml`), mapped to `DEPLOY_HOST` |
 | SSH user | `deploy` (key-only; sudo limited to `bash ./install-pricefollower.sh ./pricefollower`) |
 | App | `/opt/pricefollower/pricefollower`, systemd `pricefollower`, port 3001 |
 | Data | `/var/lib/pricefollower/pricefollower.sqlite` |

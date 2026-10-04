@@ -36,6 +36,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Dates are ISO (YYYY-MM-
   direct commits to `main` superseded by ADR-0009.
 
 ### Fixed
+- 2026-10-04 — `runner-deploy` could not resolve teruel by name; its IP is now set in the pod's
+  `hostAliases` in the k3s manifest (ADR-0013).
 - 2026-10-03 — Runner image installs `unzip`, required by claude-code-action.
 - 2026-10-03 — `setup-teruel.sh` reads the root-only deploy public key through sudo.
 

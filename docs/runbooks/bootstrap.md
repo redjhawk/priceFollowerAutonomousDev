@@ -22,6 +22,7 @@ scripts/create-secrets.sh
 
 ## 4. Build, import, deploy
 ```bash
+# first: put teruel's IP in hostAliases of runner-deploy (k3s/cluster-manifests.yaml)
 scripts/build-and-import.sh all     # runner-dev and runner-deploy images
 scripts/deploy.sh
 kubectl get pods -w
