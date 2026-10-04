@@ -9,7 +9,9 @@ Big refactorings and large features are easier to review as several PRs (possibl
 one PR at the end.
 
 ## Decision
-- The dev image ships the GitHub CLI; the action step exports `GH_TOKEN` (the job's `GITHUB_TOKEN`).
+- The dev image ships the GitHub CLI (the job installs it if an older image lacks it). `GH_TOKEN`
+  (the job's `GITHUB_TOKEN`, `pull-requests: write`) reaches Claude's commands through Claude Code's
+  `settings.env`, passed by the action's `settings` input.
 - Claude may create and switch only to branches named `ai-dev/...`
   (`git checkout -b ai-dev/…`, `git switch [-c] ai-dev/…`), push only its current branch
   (`git push [-u] origin HEAD`, exact match), and run `gh pr create|list|view`.
