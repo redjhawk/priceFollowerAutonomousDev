@@ -30,6 +30,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Dates are ISO (YYYY-MM-
 - 2026-10-04 — Claude may `git add`, `git commit` and `git push origin HEAD` on its issue branch in `ai-dev`.
 - 2026-10-04 — Claude opens its own PRs with `gh`, several per issue for big work, on `ai-dev/...`
   branches only; the dev image ships the GitHub CLI (ADR-0014).
+- 2026-10-04 — `ai-dev` allows the git history tools needed to split existing work into stacked PRs
+  (cherry-pick, rebase, reset, force-with-lease on its own branch, `gh pr edit`).
 - 2026-10-04 — Separate runners: `barcelona-dev` (ai-dev, Claude token) and `barcelona-deploy`
   (ci-deploy, deploy key), built from one Dockerfile with two targets (ADR-0011).
 - 2026-10-04 — Deploy target set by `DEPLOY_HOST`/`DEPLOY_USER` in k3s and resolved by name;

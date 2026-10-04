@@ -21,7 +21,9 @@ write access. The job runs on the dev runner `barcelona-dev`, which has no deplo
 `--allowedTools`: read/edit/write files, search, Task subagents (one per role), `go build|test|vet`,
 `gofmt`, `go run`, `npm ci`, `npm run build|dev|test:*`, `npx tsc`, `npx playwright test`, `curl` to
 localhost, read-only git, `git add`, `git commit`, creating/switching to `ai-dev/...` branches,
-`git push [-u] origin HEAD` (exact), and `gh pr create|list|view` (ADR-0014). It cannot push to `main`.
+`git push [-u|--force-with-lease] origin HEAD` (exact), history tools to split work between `ai-dev/...`
+branches (`cherry-pick`, `rebase`, `reset`, `restore`, `stash`, `checkout ai-dev/… -- paths`), and
+`gh pr create|list|view|diff|edit|comment` (ADR-0014). It cannot push to `main`.
 
 ## Flow
 1. Issue labelled `ai-dev` → Claude posts a progress comment.
