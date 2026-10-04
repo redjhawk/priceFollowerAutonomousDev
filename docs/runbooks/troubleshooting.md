@@ -21,3 +21,5 @@
 | `deploy.sh`: "set the target device's IP" | Placeholder `TERUEL_IP` still in the manifest | Put teruel's IP in `hostAliases` (SETUP step 7) |
 | ci-deploy fails with "DEPLOY_HOST is not set" | Old runner-deploy pod or manifest | `scripts/deploy.sh runner-deploy` |
 | Old runner `barcelona` shown Offline in GitHub | Registration from before the split | Remove it in *Settings › Actions › Runners* |
+| Run fails: "Actor is not allowed to trigger Actions workflows" | Workflow execution policy blocks the user or app behind the event | *Settings › Actions › Policies*: allow `redjhawk` and the Claude app (SETUP step 10) |
+| "Open pull request" step fails with 403 | Actions not allowed to create PRs | *Settings › Actions › General › Workflow permissions* → allow creating pull requests |

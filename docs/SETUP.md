@@ -204,6 +204,11 @@ data (`/var/lib/pricefollower/pricefollower.sqlite` on teruel) is kept across de
    Check: `kubectl exec deploy/runner-dev -- printenv CLAUDE_CODE_OAUTH_TOKEN | wc -c` prints
    more than 1.
 3. **Create the label:** pricetracker → **Issues › Labels › New label** → name `ai-dev`.
+4. **Let workflows open PRs:** pricetracker → **Settings › Actions › General › Workflow permissions**
+   → tick **Allow GitHub Actions to create and approve pull requests** → *Save*.
+5. **Check who may trigger workflows:** pricetracker → **Settings › Actions › Policies**. If a
+   workflow execution policy is enabled, its allow list must contain your user (`redjhawk`) and the
+   **Claude** GitHub App; otherwise runs fail with *Actor is not allowed to trigger Actions workflows*.
 
 ## 11. Use it: from issue to deployment
 
@@ -216,8 +221,9 @@ data (`/var/lib/pricefollower/pricefollower.sqlite` on teruel) is kept across de
    implements, reviews, and records everything under `doc/changes/`.
 4. **Answer questions:** if Claude needs a product decision or approval of an API change, it asks
    in the issue and stops. Reply with a comment that starts with `@claude` and contains your answer.
-5. **Open the PR:** when it is done, Claude's comment contains a link to create the pull request from
-   its branch `ai-dev/...`. Review the changes; you can ask for fixes with `@claude` comments in the PR.
+5. **Review the PR:** when Claude has committed, the workflow opens a pull request from its branch
+   `ai-dev/...` that closes the issue (link in the run summary and in the PR list). Review the
+   changes; you can ask for fixes with `@claude` comments in the PR.
 6. **Merge** the PR. `ci-deploy` starts on its own and deploys to teruel (step 9).
 
 Notes:

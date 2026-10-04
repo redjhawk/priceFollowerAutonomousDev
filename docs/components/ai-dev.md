@@ -27,7 +27,8 @@ the action itself on a branch `ai-dev/...`; it never pushes to `main`.
 1. Issue labelled `ai-dev` → Claude posts a progress comment.
 2. If a product/API/refactoring decision is needed, Claude asks in the issue and stops; you answer
    with an `@claude` comment and it continues.
-3. Claude pushes a branch and posts a link to open the PR.
+3. Claude pushes a branch `ai-dev/...`; the workflow's last step opens the PR (`Closes #<issue>`)
+   with the job's `GITHUB_TOKEN`, unless one is already open or the branch has no commits.
 4. You review and merge → `ci-deploy` deploys to teruel.
 
 ## Configuration
