@@ -32,6 +32,13 @@ push that branch, never `main`. The workflow, not Claude, opens the PR.
    with the job's `GITHUB_TOKEN`, unless one is already open or the branch has no commits.
 4. You review and merge → `ci-deploy` deploys to teruel.
 
+**One PR per issue.** The action starts a new timestamped branch on every issue-triggered run, so
+the workflow enforces a single PR itself: PRs are titled `ai-dev #<issue>: …`; if one is open, a new
+label or `@claude` comment on the issue does not start Claude but answers with a link to that PR.
+Follow-ups go as `@claude` comments in the PR, where the action checks out the PR branch so new
+commits land in the same PR. The PR step re-checks before opening, and runs for the same issue are
+serialized by `concurrency`.
+
 ## Configuration
 - `CLAUDE_CODE_OAUTH_TOKEN` in the runner pod, from k8s Secret `factory-secrets` on barcelona
   (`claude setup-token`; Claude subscription, no API billing; never stored in GitHub, ADR-0010).

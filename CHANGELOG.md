@@ -27,6 +27,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Dates are ISO (YYYY-MM-
 - 2026-10-04 — Runner image bundles Playwright Chromium; Claude runs interface QA on barcelona.
 - 2026-10-04 — `ai-dev` uses Claude Opus 5.5 with low effort (was Sonnet 5.5).
 - 2026-10-04 — `ai-dev` opens the pull request itself after Claude commits (was a link to click).
+- 2026-10-04 — `ai-dev` keeps one PR per issue: follow-ups on the issue are redirected to the open PR.
 - 2026-10-04 — Claude may `git add`, `git commit` and `git push origin HEAD` on its issue branch in `ai-dev`.
 - 2026-10-04 — Separate runners: `barcelona-dev` (ai-dev, Claude token) and `barcelona-deploy`
   (ci-deploy, deploy key), built from one Dockerfile with two targets (ADR-0011).
