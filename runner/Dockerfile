@@ -1,4 +1,7 @@
-FROM debian:bookworm-slim
+# Two targets from one file (ADR-0011):
+#   deploy: build/test/deploy toolchain, used by ci-deploy  -> local-gh-runner-deploy
+#   dev:    deploy + Playwright Chromium, used by ai-dev    -> local-gh-runner-dev
+FROM debian:bookworm-slim AS deploy
 
 # Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
@@ -23,12 +26,6 @@ ARG GO_VERSION=1.25.0
 RUN curl -fsSL https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz | tar -C /usr/local -xz
 ENV PATH=/usr/local/go/bin:$PATH
 
-# Chromium for pricetracker's Playwright tests (QA role); version matches its package.json
-ARG PLAYWRIGHT_VERSION=1.63.0
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-RUN npx -y playwright@${PLAYWRIGHT_VERSION} install --with-deps chromium \
-    && rm -rf /var/lib/apt/lists/* /root/.npm
-
 # Create a non-root runner user (sudo is needed by installdependencies.sh only)
 RUN useradd -m -u 1000 runner && usermod -aG sudo runner
 RUN echo "runner ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
@@ -49,3 +46,13 @@ COPY --chown=runner:runner entrypoint.sh /home/runner/entrypoint.sh
 RUN chmod +x /home/runner/entrypoint.sh
 
 ENTRYPOINT ["./entrypoint.sh"]
+
+FROM deploy AS dev
+
+# Chromium for pricetracker's Playwright tests (QA role); version matches its package.json
+USER root
+ARG PLAYWRIGHT_VERSION=1.63.0
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN npx -y playwright@${PLAYWRIGHT_VERSION} install --with-deps chromium \
+    && rm -rf /var/lib/apt/lists/* /root/.npm
+USER runner
