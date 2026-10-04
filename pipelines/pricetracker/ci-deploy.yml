@@ -1,5 +1,5 @@
 # Copy to pricetracker/.github/workflows/ci-deploy.yml
-# Runs on the self-hosted runner on barcelona: test, build, then deploy to teruel (Raspberry Pi 2).
+# Runs on the deploy runner on barcelona (no Claude token there): test, build, then deploy to teruel (Raspberry Pi 2).
 name: ci-deploy
 
 on:
@@ -18,7 +18,7 @@ permissions:
 jobs:
   test-and-deploy:
     if: github.repository == 'redjhawk/pricetracker'
-    runs-on: [self-hosted, barcelona]
+    runs-on: [self-hosted, barcelona-deploy]
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4

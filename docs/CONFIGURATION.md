@@ -6,8 +6,8 @@
 |------|---------|----------|--------|-------------|
 | `REPO_URL` | runner | yes | Deployment env | `https://github.com/redjhawk/pricetracker` |
 | `GITHUB_PAT` | runner | yes | Secret `runner-pat` | Fine-grained PAT (Administration r/w) used to get registration/removal tokens |
-| `CLAUDE_CODE_OAUTH_TOKEN` | runner (ai-dev jobs) | for ai-dev | Secret `claude-oauth-token` | Claude subscription token from `claude setup-token` (ADR-0010) |
-| `RUNNER_NAME` / `RUNNER_LABELS` | runner | no | Deployment env | Default `barcelona`; workflows target `runs-on: [self-hosted, barcelona]` |
+| `CLAUDE_CODE_OAUTH_TOKEN` | runner-dev only | for ai-dev | Secret `claude-oauth-token` | Claude subscription token from `claude setup-token` (ADR-0010) |
+| `RUNNER_NAME` / `RUNNER_LABELS` | runner | yes | Deployment env | `barcelona-dev` / `barcelona-deploy`; workflows target `runs-on: [self-hosted, <label>]` |
 
 ## Kubernetes Secrets
 
@@ -15,14 +15,15 @@ Created by `scripts/create-secrets.sh` (interactive, nothing stored in git).
 
 | Secret | Keys | Consumed by |
 |--------|------|-------------|
-| `factory-secrets` | `runner-pat`, `claude-oauth-token` (optional) | github-runner |
-| `factory-ssh` | `id_ed25519`, `known_hosts`, `config` (maps `teruel` → IP, user `deploy`) | github-runner, mounted at `/etc/factory-ssh` |
+| `factory-secrets` | `runner-pat` (both runners), `claude-oauth-token` (optional, runner-dev only) | referenced per key |
+| `factory-ssh` | `id_ed25519`, `known_hosts`, `config` (maps `teruel` → IP, user `deploy`) | runner-deploy only, mounted at `/etc/factory-ssh` |
 
 ## Images
 
 | Image | Built from | Pull policy |
 |-------|-----------|-------------|
-| `local-gh-runner:latest` | `runner/` (Debian 12, Node 22, Go `GO_VERSION` 1.25.0, Playwright Chromium `PLAYWRIGHT_VERSION` 1.63.0, runner `RUNNER_VERSION`=latest) | `Never` |
+| `local-gh-runner-deploy:latest` | `runner/`, target `deploy` (Debian 12, Node 22, Go `GO_VERSION` 1.25.0, runner `RUNNER_VERSION`=latest) | `Never` |
+| `local-gh-runner-dev:latest` | `runner/`, target `dev` (= deploy + Playwright Chromium `PLAYWRIGHT_VERSION` 1.63.0) | `Never` |
 
 ## GitHub secrets
 

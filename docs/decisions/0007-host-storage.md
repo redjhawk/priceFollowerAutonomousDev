@@ -9,14 +9,15 @@ and image rebuilds.
 
 ## Decision
 Single-node cluster, so use `hostPath` volumes under `/srv/factory` on barcelona, created by
-`scripts/install-barcelona.sh` and owned by uid 1000 (the user inside the images):
+`scripts/install-barcelona.sh` and owned by uid 1000 (the user inside the images).
+`<role>` is `dev` or `deploy`: each runner has its own tree (ADR-0011).
 
 | Path | Mounted at | Purpose |
 |------|-----------|---------|
-| `/srv/factory/runner/work` | `/home/runner/_work` | Checked-out code and job workspaces |
-| `/srv/factory/runner/cache` | `/home/runner/.cache` | Go build cache |
-| `/srv/factory/runner/go` | `/home/runner/go` | Go module cache |
-| `/srv/factory/runner/npm` | `/home/runner/.npm` | npm cache |
+| `/srv/factory/runner-<role>/work` | `/home/runner/_work` | Checked-out code and job workspaces |
+| `/srv/factory/runner-<role>/cache` | `/home/runner/.cache` | Go build cache |
+| `/srv/factory/runner-<role>/go` | `/home/runner/go` | Go module cache |
+| `/srv/factory/runner-<role>/npm` | `/home/runner/.npm` | npm cache |
 | `/srv/factory/ssh` | — (copied into Secret `factory-ssh`) | Deploy key, known_hosts |
 
 ## Consequences

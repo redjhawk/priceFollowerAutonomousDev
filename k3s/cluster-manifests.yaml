@@ -1,8 +1,9 @@
 # Secrets are created by scripts/create-secrets.sh and are never committed.
+# Two runners with separate secrets and storage (ADR-0011).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: github-runner
+  name: runner-dev
   namespace: default
 spec:
   replicas: 1
@@ -10,32 +11,32 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app: github-runner
+      app: runner-dev
   template:
     metadata:
       labels:
-        app: github-runner
+        app: runner-dev
     spec:
       terminationGracePeriodSeconds: 60
       securityContext:
-        fsGroup: 1000  # lets the runner user read the mounted SSH Secret
+        fsGroup: 1000  # lets the runner user read mounted Secret files
       containers:
       - name: runner
-        image: local-gh-runner:latest
+        image: local-gh-runner-dev:latest
         imagePullPolicy: Never
         env:
         - name: REPO_URL
           value: "https://github.com/redjhawk/pricetracker"
         - name: RUNNER_NAME
-          value: "barcelona"
+          value: "barcelona-dev"
         - name: RUNNER_LABELS
-          value: "barcelona"
+          value: "barcelona-dev"
         - name: GITHUB_PAT
           valueFrom:
             secretKeyRef:
               name: factory-secrets
               key: runner-pat
-        # Claude subscription token for the ai-dev workflow; it stays on barcelona
+        # Claude subscription token for ai-dev; only this runner gets it (ADR-0010, ADR-0011)
         - name: CLAUDE_CODE_OAUTH_TOKEN
           valueFrom:
             secretKeyRef:
@@ -51,26 +52,91 @@ spec:
           mountPath: /home/runner/go
         - name: npm
           mountPath: /home/runner/.npm
-        - name: ssh
-          mountPath: /etc/factory-ssh
-          readOnly: true
-      # Persistent state lives on barcelona under /srv/factory (see scripts/install-barcelona.sh)
+      # Persistent state lives on barcelona under /srv/factory/runner-dev (install-barcelona.sh)
       volumes:
       - name: work
         hostPath:
-          path: /srv/factory/runner/work
+          path: /srv/factory/runner-dev/work
           type: Directory
       - name: cache
         hostPath:
-          path: /srv/factory/runner/cache
+          path: /srv/factory/runner-dev/cache
           type: Directory
       - name: gopath
         hostPath:
-          path: /srv/factory/runner/go
+          path: /srv/factory/runner-dev/go
           type: Directory
       - name: npm
         hostPath:
-          path: /srv/factory/runner/npm
+          path: /srv/factory/runner-dev/npm
+          type: Directory
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: runner-deploy
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: runner-deploy
+  template:
+    metadata:
+      labels:
+        app: runner-deploy
+    spec:
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        fsGroup: 1000  # lets the runner user read mounted Secret files
+      containers:
+      - name: runner
+        image: local-gh-runner-deploy:latest
+        imagePullPolicy: Never
+        env:
+        - name: REPO_URL
+          value: "https://github.com/redjhawk/pricetracker"
+        - name: RUNNER_NAME
+          value: "barcelona-deploy"
+        - name: RUNNER_LABELS
+          value: "barcelona-deploy"
+        - name: GITHUB_PAT
+          valueFrom:
+            secretKeyRef:
+              name: factory-secrets
+              key: runner-pat
+        volumeMounts:
+        - name: work
+          mountPath: /home/runner/_work
+        - name: cache
+          mountPath: /home/runner/.cache
+        - name: gopath
+          mountPath: /home/runner/go
+        - name: npm
+          mountPath: /home/runner/.npm
+        # SSH key and known_hosts for the target device; only this runner gets them (ADR-0011)
+        - name: ssh
+          mountPath: /etc/factory-ssh
+          readOnly: true
+      # Persistent state lives on barcelona under /srv/factory/runner-deploy (install-barcelona.sh)
+      volumes:
+      - name: work
+        hostPath:
+          path: /srv/factory/runner-deploy/work
+          type: Directory
+      - name: cache
+        hostPath:
+          path: /srv/factory/runner-deploy/cache
+          type: Directory
+      - name: gopath
+        hostPath:
+          path: /srv/factory/runner-deploy/go
+          type: Directory
+      - name: npm
+        hostPath:
+          path: /srv/factory/runner-deploy/npm
           type: Directory
       - name: ssh
         secret:

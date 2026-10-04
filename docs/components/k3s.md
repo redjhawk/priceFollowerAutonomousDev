@@ -6,10 +6,9 @@
 ## Files
 | File | Description |
 |------|-------------|
-| `cluster-manifests.yaml` | Deployment `github-runner` (Recreate strategy, fsGroup 1000, hostPath volumes under `/srv/factory/runner`, SSH Secret), `imagePullPolicy: Never` |
+| `cluster-manifests.yaml` | Deployments `runner-dev` and `runner-deploy` (Recreate strategy, fsGroup 1000, hostPath volumes under `/srv/factory/runner-<role>`, `imagePullPolicy: Never`). Only `runner-dev` gets the Claude token; only `runner-deploy` mounts `factory-ssh` (ADR-0011) |
 
 Secrets are created by `scripts/create-secrets.sh`, never stored in git.
 
 ## Known limitations / TODO
-- No resource requests/limits, no liveness probe.
-- One runner replica: ai-dev and ci-deploy jobs run one at a time.
+- No resource requests/limits, no liveness probes.
