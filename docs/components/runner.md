@@ -15,7 +15,7 @@ barcelona (ADR-0011):
 ## Files
 | File | Description |
 |------|-------------|
-| `Dockerfile` | Target `deploy`: Debian 12 slim; git, ssh, rsync, jq, unzip (Bun install for claude-code-action), build-essential; Node 22 (NodeSource); Go `GO_VERSION`; runner `RUNNER_VERSION` (latest by default) + its dependencies; user `runner` uid 1000. Target `dev`: `deploy` + Playwright Chromium in `/ms-playwright` (`PLAYWRIGHT_VERSION`) |
+| `Dockerfile` | Target `deploy`: Debian 12 slim; git, ssh, rsync, jq, unzip (Bun install for claude-code-action), build-essential; Node 22 (NodeSource); Go `GO_VERSION`; runner `RUNNER_VERSION` (latest by default) + its dependencies; user `runner` uid 1000. Target `dev`: `deploy` + Playwright Chromium in `/ms-playwright` (`PLAYWRIGHT_VERSION`) + GitHub CLI `gh` |
 | `entrypoint.sh` | Copies SSH files from `/etc/factory-ssh` if mounted, gets registration token via PAT, `config.sh --replace`, `run.sh`, removal token + `config.sh remove` on exit/SIGTERM |
 
 ## Interfaces

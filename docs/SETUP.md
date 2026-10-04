@@ -221,9 +221,10 @@ data (`/var/lib/pricefollower/pricefollower.sqlite` on teruel) is kept across de
    implements, reviews, and records everything under `doc/changes/`.
 4. **Answer questions:** if Claude needs a product decision or approval of an API change, it asks
    in the issue and stops. Reply with a comment that starts with `@claude` and contains your answer.
-5. **Review the PR:** when Claude has committed, the workflow opens a pull request from its branch
-   `ai-dev/...` that closes the issue (link in the run summary and in the PR list). Review the
-   changes; you can ask for fixes with `@claude` comments in the PR.
+5. **Review the PRs:** Claude opens its pull requests itself, titled `ai-dev #<issue>: …`. For a big
+   refactoring or feature it may open **several**, some based on others (stacked); each says which
+   part it is and what it depends on. Merge them in that order. Ask for fixes with `@claude`
+   comments in the relevant PR.
 6. **Merge** the PR. `ci-deploy` starts on its own and deploys to teruel (step 9).
 
 Notes:

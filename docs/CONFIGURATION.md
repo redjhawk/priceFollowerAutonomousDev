@@ -25,7 +25,7 @@ Created by `scripts/create-secrets.sh` (interactive, nothing stored in git).
 | Image | Built from | Pull policy |
 |-------|-----------|-------------|
 | `local-gh-runner-deploy:latest` | `runner/`, target `deploy` (Debian 12, Node 22, Go `GO_VERSION` 1.25.0, runner `RUNNER_VERSION`=latest) | `Never` |
-| `local-gh-runner-dev:latest` | `runner/`, target `dev` (= deploy + Playwright Chromium `PLAYWRIGHT_VERSION` 1.63.0) | `Never` |
+| `local-gh-runner-dev:latest` | `runner/`, target `dev` (= deploy + Playwright Chromium `PLAYWRIGHT_VERSION` 1.63.0 + GitHub CLI) | `Never` |
 
 ## GitHub secrets
 

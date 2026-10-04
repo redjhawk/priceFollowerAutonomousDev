@@ -19,18 +19,18 @@ write access. The job runs on the dev runner `barcelona-dev`, which has no deplo
 
 ## What Claude may do
 `--allowedTools`: read/edit/write files, search, Task subagents (one per role), `go build|test|vet`,
-`gofmt`, `go run`, `npm ci`, `npm run build|dev|test:*`, `npx tsc`, `npx playwright test`,
-`curl` to localhost, read-only git, `git add`, `git commit`, and `git push origin HEAD`. The action checks out
-the branch `ai-dev/...` before Claude starts; Claude cannot create or switch branches, so it can only
-push that branch, never `main`. The workflow, not Claude, opens the PR.
+`gofmt`, `go run`, `npm ci`, `npm run build|dev|test:*`, `npx tsc`, `npx playwright test`, `curl` to
+localhost, read-only git, `git add`, `git commit`, creating/switching to `ai-dev/...` branches,
+`git push [-u] origin HEAD` (exact), and `gh pr create|list|view` (ADR-0014). It cannot push to `main`.
 
 ## Flow
 1. Issue labelled `ai-dev` → Claude posts a progress comment.
 2. If a product/API/refactoring decision is needed, Claude asks in the issue and stops; you answer
    with an `@claude` comment and it continues.
-3. Claude pushes a branch `ai-dev/...`; the workflow's last step opens the PR (`Closes #<issue>`)
-   with the job's `GITHUB_TOKEN`, unless one is already open or the branch has no commits.
-4. You review and merge → `ci-deploy` deploys to teruel.
+3. Claude commits on `ai-dev/...` branches and opens the PRs itself, titled `ai-dev #<issue>: …`.
+   Big work may be split into several PRs, stacked with `--base` when they depend on each other.
+   If Claude committed on the run branch without opening a PR, the workflow's last step opens one.
+4. You review and merge (in dependency order for stacked PRs) → `ci-deploy` deploys to teruel.
 
 ## Configuration
 - `CLAUDE_CODE_OAUTH_TOKEN` in the runner pod, from k8s Secret `factory-secrets` on barcelona

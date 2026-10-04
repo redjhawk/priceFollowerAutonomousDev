@@ -51,6 +51,7 @@
 | Base images | Debian (`bookworm-slim`) | [0006](decisions/0006-debian-base-images.md) |
 | Storage | `hostPath` under `/srv/factory` on barcelona | [0007](decisions/0007-host-storage.md) |
 | Claude token | k8s Secret on barcelona, not a GitHub secret | [0010](decisions/0010-claude-token-on-barcelona.md) |
+| Pull requests | Claude opens its own PRs, several per issue when useful, on `ai-dev/...` branches | [0014](decisions/0014-claude-opens-its-own-prs.md) |
 | Runners | Separate dev and deploy runners, one Dockerfile with two targets | [0011](decisions/0011-separate-dev-and-deploy-runners.md) |
 | Deploy target | `DEPLOY_HOST` in k3s; its IP in the pod's `hostAliases` | [0012](decisions/0012-deploy-target-by-name.md), [0013](decisions/0013-deploy-target-ip-in-hostaliases.md) |
 | Runner auth & triggers | PAT-based self-registration; push-only pipeline | [0008](decisions/0008-runner-registration.md) |
