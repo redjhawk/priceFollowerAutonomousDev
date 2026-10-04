@@ -32,6 +32,6 @@ ssh -t "$ADMIN_TARGET" "sudo bash /tmp/factory-setup-teruel.sh; rm -f /tmp/facto
 
 echo "Recording teruel's host key for the runner..."
 TERUEL_HOST="${ADMIN_TARGET#*@}"
-# Stored under the name "teruel"; the runner's SSH config uses HostKeyAlias teruel
-ssh-keyscan "$TERUEL_HOST" 2>/dev/null | sed "s/^[^ ]*/teruel/" | sudo tee /srv/factory/ssh/known_hosts >/dev/null
+# Keyed by the name you passed: use the same name as DEPLOY_HOST in k3s (ADR-0012)
+ssh-keyscan "$TERUEL_HOST" 2>/dev/null | sudo tee /srv/factory/ssh/known_hosts >/dev/null
 echo "Done. Test with: ssh -i /srv/factory/ssh/id_ed25519 $DEPLOY_USER@$TERUEL_HOST true"

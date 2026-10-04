@@ -12,7 +12,6 @@ read_secret() {
   printf '%s' "$value"
 }
 
-TERUEL_ADDRESS="$(read -rp "teruel IP address (as seen from barcelona): " a; echo "$a")"
 RUNNER_PAT="$(read_secret "GitHub PAT for runner registration (pricetracker: Administration read/write)")"
 CLAUDE_TOKEN="$(read_secret "Claude token from 'claude setup-token' (empty to skip ai-dev)")"
 
@@ -21,12 +20,10 @@ kubectl create secret generic factory-secrets \
   ${CLAUDE_TOKEN:+--from-literal=claude-oauth-token="$CLAUDE_TOKEN"} \
   --dry-run=client -o yaml | kubectl apply -f -
 
-# Pods do not resolve LAN hostnames, so the SSH config maps "teruel" to its address
-SSH_CONFIG="$(printf 'Host teruel\n  HostName %s\n  HostKeyAlias teruel\n  User deploy\n  IdentityFile ~/.ssh/id_ed25519\n' "$TERUEL_ADDRESS")"
+# The deploy runner resolves the device by name (ADR-0012); known_hosts is keyed by that name
 sudo kubectl create secret generic factory-ssh \
   --from-file=id_ed25519="$SSH_DIR/id_ed25519" \
   --from-file=known_hosts="$SSH_DIR/known_hosts" \
-  --from-literal=config="$SSH_CONFIG" \
   --dry-run=client -o yaml | kubectl apply -f -
 
 echo "Secrets factory-secrets and factory-ssh applied."

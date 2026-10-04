@@ -91,6 +91,10 @@ spec:
       terminationGracePeriodSeconds: 60
       securityContext:
         fsGroup: 1000  # lets the runner user read mounted Secret files
+      # Use barcelona's network and resolver (incl. /etc/hosts) so the target device is found by
+      # name, exactly as from barcelona itself; no IP needed (ADR-0012)
+      hostNetwork: true
+      dnsPolicy: Default
       containers:
       - name: runner
         image: local-gh-runner-deploy:latest
@@ -107,6 +111,11 @@ spec:
             secretKeyRef:
               name: factory-secrets
               key: runner-pat
+        # Target device for ci-deploy, resolved by name (ADR-0012)
+        - name: DEPLOY_HOST
+          value: "teruel"
+        - name: DEPLOY_USER
+          value: "deploy"
         volumeMounts:
         - name: work
           mountPath: /home/runner/_work
