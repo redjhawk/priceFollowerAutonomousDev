@@ -35,6 +35,11 @@ branches (`cherry-pick`, `rebase`, `reset`, `restore`, `stash`, `checkout ai-dev
    If Claude committed on the run branch without opening a PR, the workflow's last step opens one.
 4. You review and merge (in dependency order for stacked PRs) → `ci-deploy` deploys to teruel.
 
+## PR size check
+The last step fails the run when any open PR of the issue (branches `ai-dev/issue-<n>-…`) has more
+than 500 changed lines, excluding generated files (`package-lock.json`, `go.sum`, `dist/`, Playwright
+output). It enforces the limit in pricetracker's AGENTS.md; the fix is to split the PR into stacked PRs.
+
 ## Configuration
 - `CLAUDE_CODE_OAUTH_TOKEN` in the runner pod, from k8s Secret `factory-secrets` on barcelona
   (`claude setup-token`; Claude subscription, no API billing; never stored in GitHub, ADR-0010).

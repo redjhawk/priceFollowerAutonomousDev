@@ -118,3 +118,32 @@ jobs:
                 | api -X POST "$repo_api/pulls" -d @- | jq -r .html_url)
           echo "Opened $url"
           echo "### Pull request: $url" >> "$GITHUB_STEP_SUMMARY"
+
+      # Enforces the PR size limit from AGENTS.md: fails the run if any open PR for this issue has more
+      # than 500 changed lines, not counting generated files.
+      - name: Check pull request sizes
+        if: always() && steps.claude.outcome != 'skipped'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # On PR comments the event number is the PR's, so take the issue from the ai-dev/issue-<n>- branch
+          BRANCH: ${{ steps.claude.outputs.branch_name || github.event.pull_request.head.ref }}
+          EVENT_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+          LIMIT: 500
+        run: |
+          api() { curl -fsSL -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "$@"; }
+          repo_api="https://api.github.com/repos/${GITHUB_REPOSITORY}"
+          generated='^(package-lock\.json|go\.sum|dist/.*|test-results/.*|playwright-report/.*)$'
+          ISSUE_NUMBER=$(sed -n 's#^ai-dev/issue-\([0-9]*\)-.*#\1#p' <<<"$BRANCH")
+          ISSUE_NUMBER="${ISSUE_NUMBER:-$EVENT_NUMBER}"
+          failed=0
+          for pr in $(api "$repo_api/pulls?state=open&per_page=100" \
+                        | jq -r --arg n "$ISSUE_NUMBER" '.[] | select(.head.ref | startswith("ai-dev/issue-\($n)-")) | .number'); do
+            lines=$(api "$repo_api/pulls/$pr/files?per_page=100" \
+                      | jq --arg gen "$generated" '[.[] | select(.filename | test($gen) | not) | .additions + .deletions] | add // 0')
+            echo "PR #$pr: $lines changed lines (limit $LIMIT)"
+            if [ "$lines" -gt "$LIMIT" ]; then
+              echo "::error::PR #$pr has $lines changed lines; split it into stacked PRs of at most $LIMIT"
+              failed=1
+            fi
+          done
+          exit $failed

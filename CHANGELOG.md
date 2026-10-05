@@ -32,6 +32,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Dates are ISO (YYYY-MM-
   branches only; the dev image ships the GitHub CLI (ADR-0014).
 - 2026-10-04 — `ai-dev` allows the git history tools needed to split existing work into stacked PRs
   (cherry-pick, rebase, reset, force-with-lease on its own branch, `gh pr edit`).
+- 2026-10-05 — `ai-dev` fails when an issue PR exceeds 500 changed lines (generated files excluded).
 - 2026-10-05 — `ai-dev` may create `ai-dev/...` branches with `git branch` (without switching) for stacks.
 - 2026-10-04 — Separate runners: `barcelona-dev` (ai-dev, Claude token) and `barcelona-deploy`
   (ci-deploy, deploy key), built from one Dockerfile with two targets (ADR-0011).

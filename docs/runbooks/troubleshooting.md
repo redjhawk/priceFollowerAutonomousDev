@@ -18,6 +18,7 @@
 | Claude says it cannot commit, push or open PRs | Old `ai-dev.yml` or old dev image without `gh` | Copy the current `ai-dev.yml` into pricetracker; `scripts/build-and-import.sh runner-dev && scripts/deploy.sh runner-dev` |
 | Claude says the GitHub CLI is missing or `GH_TOKEN` is unset | Dev runner image built before `gh` was added | The job now installs `gh` itself (warning in the log); rebuild anyway: `scripts/build-and-import.sh runner-dev && scripts/deploy.sh runner-dev` |
 | Merged PR is not deployed | `ci-deploy` listened to `main`, but pricetracker's default branch is `master` | Copy the current `ci-deploy.yml` (listens to `master` and `main`) |
+| ai-dev fails at "Check pull request sizes" | An issue PR has > 500 changed lines (generated files excluded) | Ask Claude in that PR to split it into stacked PRs (`@claude split this PR`) |
 | `gh pr create` fails with 403 | Actions not allowed to create PRs | *Settings › Actions › General › Workflow permissions* |
 | Claude says a command is not allowed | Not in `--allowedTools` of `ai-dev.yml` | Add it to the allow-list in this repo, copy the workflow to pricetracker again |
 | ci-deploy: "Cannot resolve teruel from barcelona" | `hostAliases` hostname differs from `DEPLOY_HOST`, or pod not restarted | Fix `k3s/cluster-manifests.yaml` → `scripts/deploy.sh runner-deploy`; check `kubectl exec deploy/runner-deploy -- getent hosts teruel` |
