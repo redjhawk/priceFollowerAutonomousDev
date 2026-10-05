@@ -17,7 +17,8 @@ one PR at the end.
   (`git push [-u] origin HEAD`, exact match), and run `gh pr create|list|view`.
 - To split work that already exists, Claude may also: `git fetch origin`, `git checkout ai-dev/… [-- paths]`,
   `git restore`, `git rm`, `git mv`, `git stash`, `git cherry-pick`, `git rebase` (incl. `--onto`),
-  `git reset`, `git merge-base`, `git branch -m ai-dev/…`, `git push --force-with-lease origin HEAD`
+  `git reset`, `git merge-base`, `git branch ai-dev/… [start-point]` (create a stack branch without
+  switching), `git branch -m ai-dev/…`, `git push --force-with-lease origin HEAD`
   (exact, to update a rebased branch), and `gh pr diff|edit|comment`. All of these act locally or on
   the current branch, which can only be an `ai-dev/...` branch.
 - PR convention: title `ai-dev #<issue>: <part>`, body `Part of #<issue>` or `Closes #<issue>` on the
