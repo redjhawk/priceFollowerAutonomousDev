@@ -21,6 +21,9 @@ one PR at the end.
   switching), `git branch -m ai-dev/…`, `git push --force-with-lease origin HEAD`
   (exact, to update a rebased branch), and `gh pr diff|edit|comment`. All of these act locally or on
   the current branch, which can only be an `ai-dev/...` branch.
+- Rules for `ai-dev/` branches use the `*` wildcard (`Bash(git checkout -b ai-dev/*)`), not `:*`:
+  in Claude Code `:*` only matches a prefix followed by a space or the end, so `ai-dev/:*` never
+  matched `ai-dev/issue-15-…` and every branch command was refused.
 - PR convention: title `ai-dev #<issue>: <part>`, body `Part of #<issue>` or `Closes #<issue>` on the
   last one; dependent PRs use `--base <previous branch>`.
 - The workflow's "Open pull request" step stays as a safety net for a run branch left without a PR.

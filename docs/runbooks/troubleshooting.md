@@ -20,6 +20,7 @@
 | Merged PR is not deployed | `ci-deploy` listened to `main`, but pricetracker's default branch is `master` | Copy the current `ci-deploy.yml` (listens to `master` and `main`) |
 | ai-dev fails at "Check pull request sizes" | An issue PR has > 500 changed lines (generated files excluded) | Ask Claude in that PR to split it into stacked PRs (`@claude split this PR`) |
 | `gh pr create` fails with 403 | Actions not allowed to create PRs | *Settings › Actions › General › Workflow permissions* |
+| Claude's `git checkout -b ai-dev/…` / `git branch ai-dev/…` "requires approval" | Rule written as `ai-dev/:*`; `:*` needs a space after the prefix | Use `ai-dev/*` (current `ai-dev.yml`) |
 | Claude says a command is not allowed | Not in `--allowedTools` of `ai-dev.yml` | Add it to the allow-list in this repo, copy the workflow to pricetracker again |
 | ci-deploy: "Cannot resolve teruel from barcelona" | `hostAliases` hostname differs from `DEPLOY_HOST`, or pod not restarted | Fix `k3s/cluster-manifests.yaml` → `scripts/deploy.sh runner-deploy`; check `kubectl exec deploy/runner-deploy -- getent hosts teruel` |
 | ci-deploy: SSH timeout to teruel | Wrong or changed IP in `hostAliases` | Update it → `scripts/deploy.sh runner-deploy` |
