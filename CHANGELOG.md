@@ -44,6 +44,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Dates are ISO (YYYY-MM-
   direct commits to `main` superseded by ADR-0009.
 
 ### Fixed
+- 2026-10-05 — `ai-dev` allows `go run` prefixed with `PRICEFOLLOWER_ENV=development`, as pricetracker's
+  dev commands use it.
 - 2026-10-05 — `ai-dev` branch rules use `ai-dev/*` instead of `ai-dev/:*`, which never matched real
   branch names; QA may also run `node`, `./pricefollower`, Playwright CLI and stop the app/dev server.
 - 2026-10-04 — `ci-deploy` also listens to `master`, pricetracker's real default branch; merged PRs

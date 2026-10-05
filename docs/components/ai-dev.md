@@ -19,7 +19,7 @@ write access. The job runs on the dev runner `barcelona-dev`, which has no deplo
 
 ## What Claude may do
 `--allowedTools`: read/edit/write files, search, Task subagents (one per role), `go build|test|vet`,
-`gofmt`, `go run`, `npm ci`, `npm run build|dev|test:*`, `npx tsc`, `npx playwright …`, `node`,
+`gofmt`, `go run` (also with `PRICEFOLLOWER_ENV=development` in front), `npm ci`, `npm run build|dev|test:*`, `npx tsc`, `npx playwright …`, `node`,
 `./pricefollower`, `bash -n`, `pkill -f pricefollower|vite`, `curl` to localhost/127.0.0.1 only, read-only git, `git add`, `git commit`, creating/switching to `ai-dev/...` branches,
 `git push [-u|--force-with-lease] origin HEAD` (exact), history tools to split work between `ai-dev/...`
 branches (`cherry-pick`, `rebase`, `reset`, `restore`, `stash`, `checkout ai-dev/… -- paths`,
